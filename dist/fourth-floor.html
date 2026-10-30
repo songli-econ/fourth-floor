@@ -1,0 +1,3270 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>四楼</title>
+<meta name="description" content="一栋老公寓的四楼，几个室友，每天一点点的生活。">
+<meta name="theme-color" content="#2a2233">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='14' width='44' height='44' rx='4' fill='%23e8b26a'/%3E%3Crect x='18' y='22' width='12' height='12' fill='%23fff3cf'/%3E%3Crect x='34' y='22' width='12' height='12' fill='%23fff3cf'/%3E%3Crect x='26' y='40' width='12' height='18' fill='%237b4b33'/%3E%3Cpath d='M6 16 L32 4 L58 16' stroke='%237b4b33' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --ink: #3a2e26;
+  --ink-soft: #6f5e50;
+  --paper: rgba(253, 248, 238, 0.94);
+  --paper-solid: #fdf8ee;
+  --edge: #e3d3b8;
+  --accent: #c8693f;
+  --accent-ink: #fff8ee;
+  --shadow: 0 10px 40px rgba(40, 25, 10, 0.28);
+  --serif: 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', serif;
+  --hand: 'Ma Shan Zheng', 'Kaiti SC', 'STKaiti', 'KaiTi', cursive;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; height: 100%; background: #2a2233; color: var(--ink); font-family: var(--serif); }
+body { overflow: hidden; -webkit-font-smoothing: antialiased; }
+button { font: inherit; cursor: pointer; }
+[hidden] { display: none !important; }
+
+#app { position: fixed; inset: 0; overflow: hidden; user-select: none; -webkit-user-select: none; }
+
+/* background: two layers cross-fade */
+#bg, #bg .bg-layer { position: absolute; inset: 0; }
+#bg .bg-layer { opacity: 0; transition: opacity .8s ease; }
+#bg .bg-layer.on { opacity: 1; }
+#bg svg { width: 100%; height: 100%; display: block; }
+
+/* falling rain over everything outdoors-ish */
+#rain { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 1.5s; }
+#rain.on { opacity: 1; }
+#rain i { position: absolute; top: -10%; width: 1px; height: 14vh; background: linear-gradient(transparent, rgba(220, 230, 245, 0.55)); animation: fall linear infinite; }
+@keyframes fall { to { transform: translate(-3vw, 125vh); } }
+
+/* cast */
+#cast { position: absolute; inset: 0; pointer-events: none; }
+.actor { position: absolute; bottom: 0; height: min(78vh, 680px); aspect-ratio: 400 / 560; transform: translateX(-50%); transition: left .6s ease, filter .4s ease, opacity .5s ease, transform .4s ease; filter: brightness(.82) saturate(.9); opacity: 0; }
+.actor.in { opacity: 1; }
+.actor.speaking { filter: none; transform: translateX(-50%) translateY(-6px); z-index: 2; }
+.actor .breathe { width: 100%; height: 100%; animation: breathe 4.8s ease-in-out infinite; transform-origin: 50% 100%; }
+.actor svg { width: 100%; height: 100%; display: block; filter: drop-shadow(0 8px 16px rgba(30, 20, 10, .25)); }
+.actor.clickable { pointer-events: auto; cursor: pointer; }
+#cast.hub .actor { height: min(60vh, 520px); }
+#cast .actor.is-cat { height: min(40vh, 340px); }
+.actor.clickable:hover { filter: brightness(1.04); }
+.actor .tag { position: absolute; left: 50%; bottom: 46%; transform: translateX(-50%); padding: 4px 12px; border-radius: 999px; background: var(--paper); font-size: 14px; box-shadow: var(--shadow); white-space: nowrap; opacity: 0; transition: opacity .3s; }
+.actor.clickable .tag { opacity: 1; }
+@keyframes breathe { 50% { transform: scaleY(1.008) translateY(-2px); } }
+
+/* top bar */
+#topbar { position: absolute; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; padding: max(10px, env(safe-area-inset-top)) 16px 10px; z-index: 20; color: #fff8ee; text-shadow: 0 1px 6px rgba(0, 0, 0, .5); pointer-events: none; }
+#topbar nav { display: flex; gap: 6px; pointer-events: auto; }
+#topbar button { background: rgba(30, 22, 18, .38); color: #fff8ee; border: 1px solid rgba(255, 248, 238, .25); border-radius: 999px; padding: 6px 14px; font-size: 14px; backdrop-filter: blur(6px); }
+#topbar button:hover { background: rgba(30, 22, 18, .55); }
+#clock { font-size: 15px; letter-spacing: .08em; }
+
+/* dialogue box */
+#dialog { position: absolute; left: 50%; bottom: max(18px, env(safe-area-inset-bottom)); transform: translateX(-50%); width: min(980px, calc(100% - 32px)); min-height: 150px; padding: 30px 34px 26px; background: var(--paper); border: 1px solid var(--edge); border-radius: 18px; box-shadow: var(--shadow); z-index: 10; cursor: pointer; }
+#dialog.narration { background: rgba(32, 24, 22, .78); color: #f6ecdc; border-color: rgba(255, 240, 220, .14); }
+#nameplate { position: absolute; top: -18px; left: 26px; padding: 6px 18px; border-radius: 10px; color: #fff; font-weight: 600; letter-spacing: .12em; font-size: 16px; box-shadow: 0 4px 14px rgba(0, 0, 0, .18); }
+#nameplate:empty { display: none; }
+#line { margin: 0; font-size: clamp(17px, 2.1vw, 21px); line-height: 1.85; letter-spacing: .03em; white-space: pre-wrap; }
+#more { position: absolute; right: 24px; bottom: 14px; font-size: 13px; color: var(--accent); opacity: 0; animation: bob 1.2s ease-in-out infinite; }
+#dialog.ready #more { opacity: 1; }
+#dialog.narration #more { color: #f2c38f; }
+@keyframes bob { 50% { transform: translateY(3px); } }
+
+/* choices */
+#choices { position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 14px; padding: 16px; z-index: 15; background: rgba(20, 14, 12, .28); }
+#choices button { width: min(560px, 100%); padding: 16px 22px; border-radius: 14px; border: 1px solid var(--edge); background: var(--paper); color: var(--ink); font-size: 18px; text-align: left; box-shadow: var(--shadow); transition: transform .15s, background .15s; opacity: 0; animation: rise .4s ease forwards; }
+#choices button:hover, #choices button:focus-visible { transform: translateX(6px); background: #fff; outline: 2px solid var(--accent); }
+#choices button small { color: var(--accent); margin-right: 10px; font-weight: 600; }
+@keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+
+/* name / text input */
+#ask { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(460px, calc(100% - 32px)); padding: 26px; background: var(--paper-solid); border-radius: 18px; box-shadow: var(--shadow); z-index: 16; }
+#ask label { display: block; line-height: 1.8; margin-bottom: 14px; }
+.row { display: flex; gap: 10px; flex-wrap: wrap; }
+#ask input, #chatbox input, .settings input:not([type]), .settings input[type=password], .settings select { flex: 1; min-width: 0; padding: 10px 14px; font: inherit; border: 1px solid var(--edge); border-radius: 10px; background: #fff; color: var(--ink); }
+#ask button, #chatbox button, .settings button, .actions button, dialog header button { padding: 10px 18px; border-radius: 10px; border: 1px solid var(--edge); background: #fff; color: var(--ink); }
+button.primary, #ask button { background: var(--accent); color: var(--accent-ink); border-color: transparent; }
+button.danger { color: #a33b2b; }
+button.ghost { background: transparent; color: #fff8ee; border-color: rgba(255, 248, 238, .5); }
+
+/* sticky note */
+#note { position: absolute; inset: 0; display: grid; place-items: center; z-index: 14; background: rgba(20, 14, 12, .3); cursor: pointer; padding: 16px; }
+#note .paper { position: relative; width: min(420px, 100%); min-height: 260px; padding: 44px 34px 40px; background: linear-gradient(#ffe99b, #ffe07a); box-shadow: 0 18px 40px rgba(40, 25, 0, .35); transform: rotate(-2.2deg); animation: stick .5s cubic-bezier(.2, 1.4, .4, 1); }
+#note .paper::before { content: ''; position: absolute; top: -12px; left: 50%; width: 110px; height: 26px; transform: translateX(-50%) rotate(2deg); background: rgba(255, 255, 255, .55); box-shadow: 0 1px 3px rgba(0, 0, 0, .1); }
+#note-text { margin: 0; font-family: var(--hand); font-size: clamp(22px, 3.6vw, 28px); line-height: 1.7; color: #3b3022; white-space: pre-wrap; }
+#note-from { position: absolute; right: 26px; bottom: 14px; font-family: var(--hand); font-size: 20px; color: #6b5636; }
+@keyframes stick { from { transform: rotate(-12deg) scale(.7); opacity: 0; } }
+
+/* chapter / scene card */
+#card { position: absolute; inset: 0; display: grid; place-items: center; z-index: 18; background: rgba(18, 13, 16, .62); color: #fff3e2; text-align: center; animation: fadein .8s ease; cursor: pointer; }
+#card small { letter-spacing: .4em; opacity: .75; font-size: 14px; }
+#card h2 { margin: 14px 0 0; font-family: var(--hand); font-weight: 400; font-size: clamp(34px, 6vw, 56px); letter-spacing: .12em; }
+@keyframes fadein { from { opacity: 0; } }
+
+/* hub */
+#hub { position: absolute; left: 16px; top: 64px; z-index: 12; width: min(360px, calc(100% - 32px)); }
+#hub .panel { background: var(--paper); border: 1px solid var(--edge); border-radius: 16px; padding: 18px 20px; box-shadow: var(--shadow); }
+#hub h2 { margin: 0 0 6px; font-size: 20px; }
+#hub p { margin: 6px 0; line-height: 1.7; color: var(--ink-soft); font-size: 15px; }
+#hub .actions { margin-top: 12px; }
+
+/* chat */
+#chatbox { position: absolute; left: 50%; bottom: calc(max(18px, env(safe-area-inset-bottom)) + 168px); transform: translateX(-50%); width: min(980px, calc(100% - 32px)); display: flex; gap: 8px; z-index: 11; }
+
+/* title */
+#title { position: absolute; inset: 0; display: grid; place-items: center; z-index: 30; background: radial-gradient(ellipse at 50% 40%, rgba(30, 20, 30, .15), rgba(20, 14, 20, .7)); color: #fff6e8; text-align: center; padding: 24px; }
+#title h1 { margin: 0; font-family: var(--hand); font-weight: 400; font-size: clamp(72px, 16vw, 140px); letter-spacing: .2em; text-shadow: 0 6px 30px rgba(255, 190, 120, .35); }
+#title .sub { margin: 10px 0 34px; font-size: clamp(15px, 2.4vw, 19px); opacity: .9; line-height: 1.8; }
+#title .actions { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+#title .actions button { padding: 12px 28px; font-size: 18px; border-radius: 999px; }
+#title .foot { margin-top: 30px; font-size: 14px; opacity: .65; }
+
+/* toast */
+#toast { position: absolute; left: 50%; top: 70px; transform: translateX(-50%); padding: 10px 18px; border-radius: 999px; background: rgba(30, 22, 18, .78); color: #fff8ee; font-size: 14px; z-index: 40; opacity: 0; transition: opacity .4s; pointer-events: none; max-width: calc(100% - 32px); }
+#toast.on { opacity: 1; }
+
+/* modals */
+dialog { width: min(620px, calc(100% - 32px)); max-height: 86vh; padding: 0; border: none; border-radius: 18px; background: var(--paper-solid); color: var(--ink); box-shadow: var(--shadow); }
+dialog::backdrop { background: rgba(20, 14, 18, .55); }
+dialog header { position: sticky; top: 0; display: flex; justify-content: space-between; align-items: center; padding: 16px 20px; background: var(--paper-solid); border-bottom: 1px solid var(--edge); }
+dialog h3 { margin: 0; }
+#log-list { margin: 0; padding: 12px 24px 24px 44px; line-height: 1.8; }
+#log-list li { margin: 6px 0; }
+#log-list b { margin-right: 8px; }
+.settings { padding: 8px 20px 22px; }
+.settings fieldset { border: 1px solid var(--edge); border-radius: 12px; margin: 14px 0; padding: 12px 16px 16px; display: grid; gap: 10px; }
+.settings legend { padding: 0 6px; font-weight: 600; }
+.settings label { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.hint { margin: 0; font-size: 13px; color: var(--ink-soft); line-height: 1.7; }
+
+@media (max-width: 720px) {
+  .actor { height: min(50vh, 440px); }
+  #cast.hub .actor { height: min(40vh, 340px); }
+  #cast .actor.is-cat { height: min(28vh, 240px); }
+  #dialog { padding: 26px 20px 22px; min-height: 140px; }
+  #chatbox { bottom: calc(max(18px, env(safe-area-inset-bottom)) + 156px); }
+  #hub { top: 56px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
+
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="bg"><div class="bg-layer"></div><div class="bg-layer"></div></div>
+  <div id="rain" aria-hidden="true"></div>
+  <div id="cast" aria-hidden="true"></div>
+
+  <header id="topbar" hidden>
+    <div id="clock"></div>
+    <nav>
+      <button data-act="hub" title="四楼此刻">四楼</button>
+      <button data-act="log" title="回看">回看</button>
+      <button data-act="settings" title="设置">设置</button>
+    </nav>
+  </header>
+
+  <section id="dialog" hidden>
+    <div id="nameplate"></div>
+    <p id="line"></p>
+    <span id="more" aria-hidden="true">▼</span>
+  </section>
+
+  <section id="choices" hidden></section>
+
+  <form id="ask" hidden>
+    <label id="ask-label" for="ask-input"></label>
+    <div class="row"><input id="ask-input" maxlength="12" autocomplete="off"><button type="submit">好</button></div>
+  </form>
+
+  <section id="note" hidden><div class="paper"><p id="note-text"></p><span id="note-from"></span></div></section>
+
+  <section id="card" hidden><div><small id="card-sub"></small><h2 id="card-title"></h2></div></section>
+
+  <section id="hub" hidden>
+    <div class="panel">
+      <h2 id="hub-title"></h2>
+      <p id="hub-desc"></p>
+      <p id="hub-hint"></p>
+      <div class="actions">
+        <button id="hub-story" class="primary"></button>
+      </div>
+    </div>
+  </section>
+
+  <form id="chatbox" hidden>
+    <input id="chat-input" placeholder="说点什么……" autocomplete="off" maxlength="200">
+    <button type="submit">说</button>
+    <button type="button" id="chat-end">走开</button>
+  </form>
+
+  <section id="title">
+    <div class="title-inner">
+      <h1>四楼</h1>
+      <p class="sub">一栋没有电梯的老公寓。你搬进来的第一天，下着雨。</p>
+      <div class="actions">
+        <button id="btn-start" class="primary">搬进去</button>
+        <button id="btn-import" class="ghost">导入存档</button>
+      </div>
+      <p class="foot">每天来一会儿就好。他们会等你。</p>
+    </div>
+  </section>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<dialog id="log-modal">
+  <header><h3>回看</h3><button data-close>关闭</button></header>
+  <ol id="log-list"></ol>
+</dialog>
+
+<dialog id="settings-modal">
+  <header><h3>设置</h3><button data-close>关闭</button></header>
+  <div class="settings">
+    <fieldset>
+      <legend>节奏</legend>
+      <label><input type="radio" name="pace" value="real"> 真实时间（每天解锁一天）</label>
+      <label><input type="radio" name="pace" value="free"> 不用等（一口气看下去）</label>
+    </fieldset>
+    <fieldset>
+      <legend>文字与声音</legend>
+      <label>文字速度 <input type="range" id="set-speed" min="0" max="80" step="4"></label>
+      <label><input type="checkbox" id="set-sound"> 环境音（雨声、房间声）</label>
+    </fieldset>
+    <fieldset>
+      <legend>让角色自由聊天（可选）</legend>
+      <p class="hint">接入一家大模型以后，在「四楼」里点角色可以和他们自由对话；剧情主线不变。API key 只保存在这台设备的浏览器里，导出存档时不会带上。有些厂商不允许网页直接调用，届时需要一个小代理。</p>
+      <label>厂商 <select id="set-provider"></select></label>
+      <label>模型 <input id="set-model" autocomplete="off"></label>
+      <label>API key <input id="set-key" type="password" autocomplete="off"></label>
+      <label>接口地址 <input id="set-endpoint" autocomplete="off" placeholder="留空用默认"></label>
+      <label><input type="checkbox" id="set-llm-on"> 启用</label>
+      <button type="button" id="set-test">测试一下</button>
+      <p id="set-test-out" class="hint"></p>
+    </fieldset>
+    <fieldset>
+      <legend>存档</legend>
+      <div class="row">
+        <button type="button" id="set-export">导出存档</button>
+        <button type="button" id="set-import">导入存档</button>
+        <button type="button" id="set-reset" class="danger">重新开始</button>
+      </div>
+    </fieldset>
+  </div>
+</dialog>
+
+<input type="file" id="file-import" accept="application/json,.json" hidden>
+<script>
+(() => {
+const __mods = {}, __cache = {};
+function __def(name, fn) { __mods[name] = fn; }
+function __req(name) { if (!(name in __cache)) { if (!__mods[name]) throw new Error('missing module ' + name); __cache[name] = __mods[name](); } return __cache[name]; }
+__def("src/engine.js", () => {
+// Scene runner. A scene is a list of steps; the runner is a generator that yields only
+// the events the UI must show, and applies state changes (flags, affinity, memory) inline.
+//
+// Step forms:
+//   { text }                       narration
+//   { say, face?, text }           a character line
+//   { note, from?, text }          a sticky note / message card
+//   { bg, time?, weather? }        change background
+//   { show: [ids] }                who is on stage (portraits)
+//   { choice: [{ text, then?, set?, aff?, mem?, if? }] }
+//   { if: cond, then: [...], else?: [...] }
+//   { set?, unset?, aff?, mem? }   pure state change
+//   { pause: ms }                  a beat with no text
+//   { input: key, prompt, fallback } ask the player for a short text ('name' sets state.name)
+
+const AFF_MIN = -5;
+const AFF_MAX = 20;
+
+function evalCond(cond, state) {
+  if (!cond) return true;
+  if (typeof cond === 'function') return !!cond(state);
+  if (cond.all) return cond.all.every(c => evalCond(c, state));
+  if (cond.any) return cond.any.some(c => evalCond(c, state));
+  if (cond.not) return !evalCond(cond.not, state);
+  if ('flag' in cond) return !!state.flags[cond.flag];
+  if ('mem' in cond) return state.mem[cond.mem] !== undefined;
+  if ('memIs' in cond) return state.mem[cond.memIs[0]] === cond.memIs[1];
+  if ('seen' in cond) return !!state.done[cond.seen];
+  if ('aff' in cond) {
+    const [who, op, n] = cond.aff;
+    const v = state.aff[who] ?? 0;
+    switch (op) {
+      case '>=': return v >= n;
+      case '>': return v > n;
+      case '<=': return v <= n;
+      case '<': return v < n;
+      case '==': return v === n;
+      default: throw new Error(`unknown aff op ${op}`);
+    }
+  }
+  throw new Error(`unknown condition ${JSON.stringify(cond)}`);
+}
+
+function applyEffects(step, state) {
+  if (step.set) for (const k of [].concat(step.set)) state.flags[k] = true;
+  if (step.unset) for (const k of [].concat(step.unset)) delete state.flags[k];
+  if (step.aff) {
+    for (const [who, d] of Object.entries(step.aff)) {
+      const v = (state.aff[who] ?? 0) + d;
+      state.aff[who] = Math.max(AFF_MIN, Math.min(AFF_MAX, v));
+    }
+  }
+  if (step.mem) Object.assign(state.mem, step.mem);
+}
+
+function renderText(text, state) {
+  const raw = typeof text === 'function' ? text(state) : text;
+  return String(raw)
+    .replace(/\{name\}/g, state.name || '你')
+    .replace(/\{m:([a-zA-Z0-9_]+)\}/g, (_, k) => (state.mem[k] ?? ''));
+}
+
+function* runSteps(steps, state) {
+  for (const step of steps) {
+    if (step.if !== undefined) {
+      if (step.then || step.else) {
+        yield* runSteps(evalCond(step.if, state) ? (step.then || []) : (step.else || []), state);
+        continue;
+      }
+      if (!evalCond(step.if, state)) continue;
+    }
+    applyEffects(step, state);
+    if (step.bg) yield { type: 'bg', bg: step.bg, time: step.time, weather: step.weather };
+    if (step.show) yield { type: 'show', show: step.show };
+    if (step.pause) yield { type: 'pause', ms: step.pause };
+    if ('note' in step) {
+      yield { type: 'note', from: step.from || step.note, text: renderText(step.text, state) };
+    } else if ('say' in step) {
+      yield { type: 'say', who: step.say, face: step.face || 'normal', text: renderText(step.text, state) };
+    } else if ('text' in step) {
+      yield { type: 'text', text: renderText(step.text, state) };
+    }
+    if (step.input) {
+      const value = yield { type: 'input', key: step.input, prompt: renderText(step.prompt || '', state), placeholder: step.placeholder || '' };
+      const clean = String(value ?? '').trim().slice(0, 12) || step.fallback || '';
+      if (step.input === 'name') state.name = clean;
+      else state.mem[step.input] = clean;
+    }
+    if (step.choice) {
+      const options = step.choice.filter(o => evalCond(o.if, state));
+      const picked = yield { type: 'choice', options: options.map(o => renderText(o.text, state)) };
+      const opt = options[picked ?? 0];
+      if (!opt) throw new Error(`choice index ${picked} out of range`);
+      applyEffects(opt, state);
+      if (opt.then) yield* runSteps(opt.then, state);
+    }
+  }
+}
+
+// Run a whole scene. Effects declared on the scene itself apply when it ends.
+function* runScene(scene, state) {
+  yield { type: 'scene', id: scene.id, title: scene.title, bg: scene.bg, time: scene.time, weather: scene.weather };
+  yield* runSteps(scene.steps, state);
+  applyEffects(scene, state);
+  state.done[scene.id] = true;
+  yield { type: 'end', id: scene.id };
+}
+
+return { AFF_MIN, AFF_MAX, evalCond, applyEffects, renderText, runSteps, runScene };
+});
+__def("src/calendar.js", () => {
+// Real-time rhythm: one story day per real calendar day. Leaving is never punished.
+
+function dateKey(d = new Date()) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+function daysBetween(a, b) {
+  if (!a || !b) return 0;
+  const [ya, ma, da] = a.split('-').map(Number);
+  const [yb, mb, db] = b.split('-').map(Number);
+  return Math.round((Date.UTC(yb, mb - 1, db) - Date.UTC(ya, ma - 1, da)) / 86400000);
+}
+
+function scenesOfDay(chapter, day) {
+  return chapter.scenes.filter(s => s.day === day);
+}
+
+function dayComplete(chapter, state, day) {
+  const list = scenesOfDay(chapter, day);
+  return list.length > 0 && list.every(s => state.done[s.id]);
+}
+
+// What can be played right now.
+//   { status: 'play', day, scene }      next scene to play
+//   { status: 'wait', day }             day `day` is unlocked tomorrow
+//   { status: 'end' }                   chapter finished
+function nextUp(chapter, state, today) {
+  for (let day = 0; day <= chapter.lastDay; day++) {
+    const list = scenesOfDay(chapter, day);
+    const pending = list.find(s => !state.done[s.id]);
+    if (!pending) continue;
+    if (day > 0 && state.settings.pace === 'real') {
+      const prevDone = state.dayDoneOn[day - 1];
+      if (prevDone && daysBetween(prevDone, today) < 1) return { status: 'wait', day };
+    }
+    return { status: 'play', day, scene: pending };
+  }
+  return { status: 'end' };
+}
+
+function markDayIfComplete(chapter, state, day, today) {
+  if (dayComplete(chapter, state, day) && !state.dayDoneOn[day]) {
+    state.dayDoneOn[day] = today;
+    return true;
+  }
+  return false;
+}
+
+// How long the player was away since the last visit (0 = same day).
+function absence(state, today) {
+  return state.lastVisit ? Math.max(0, daysBetween(state.lastVisit, today)) : 0;
+}
+
+function partOfDay(d = new Date()) {
+  const h = d.getHours();
+  if (h >= 5 && h < 9) return 'dawn';
+  if (h >= 9 && h < 17) return 'day';
+  if (h >= 17 && h < 20) return 'dusk';
+  return 'night';
+}
+
+return { dateKey, daysBetween, scenesOfDay, dayComplete, nextUp, markDayIfComplete, absence, partOfDay };
+});
+__def("src/state.js", () => {
+// Game state, local save, and save-file export/import.
+
+const SAVE_KEY = 'fourth-floor.save.v1';
+const SETTINGS_KEY = 'fourth-floor.settings.v1';
+const VERSION = 1;
+
+function defaultSettings() {
+  return {
+    pace: 'real',          // 'real' = one day per real day; 'free' = no waiting
+    textSpeed: 32,         // ms per character; 0 = instant
+    sound: false,
+    llm: { enabled: false, provider: 'none', model: '', key: '', endpoint: '' }
+  };
+}
+
+function newState(name = '') {
+  return {
+    v: VERSION,
+    name,
+    startedOn: null,
+    lastVisit: null,
+    done: {},
+    dayDoneOn: {},
+    flags: {},
+    aff: { ache: 0, xiaoman: 0, laozhou: 0, nico: 0, cat: 0 },
+    mem: {},
+    chats: {},             // per-character small talk count, for idle line rotation
+    settings: defaultSettings()
+  };
+}
+
+function safeStorage(storage) {
+  return {
+    get(k) { try { return storage?.getItem(k) ?? null; } catch { return null; } },
+    set(k, v) { try { storage?.setItem(k, v); return true; } catch { return false; } },
+    del(k) { try { storage?.removeItem(k); } catch { /* ignore */ } }
+  };
+}
+
+// The API key lives apart from the save so that exported save files never carry it.
+function load(storage) {
+  const s = safeStorage(storage);
+  let state = null;
+  const raw = s.get(SAVE_KEY);
+  if (raw) {
+    try { state = migrate(JSON.parse(raw)); } catch { state = null; }
+  }
+  state = state || newState();
+  const rawSettings = s.get(SETTINGS_KEY);
+  if (rawSettings) {
+    try {
+      const saved = JSON.parse(rawSettings);
+      state.settings = { ...defaultSettings(), ...saved, llm: { ...defaultSettings().llm, ...(saved.llm || {}) } };
+    } catch { /* keep defaults */ }
+  }
+  return state;
+}
+
+function save(storage, state) {
+  const s = safeStorage(storage);
+  const { settings, ...rest } = state;
+  const ok1 = s.set(SAVE_KEY, JSON.stringify(rest));
+  const ok2 = s.set(SETTINGS_KEY, JSON.stringify(settings));
+  return ok1 && ok2;
+}
+
+function reset(storage) {
+  safeStorage(storage).del(SAVE_KEY);
+}
+
+function migrate(obj) {
+  if (!obj || typeof obj !== 'object') throw new Error('not a save');
+  if (obj.v !== VERSION) throw new Error(`unsupported save version ${obj.v}`);
+  const base = newState();
+  return {
+    ...base,
+    ...obj,
+    aff: { ...base.aff, ...(obj.aff || {}) },
+    settings: base.settings
+  };
+}
+
+function exportSave(state) {
+  const { settings, ...rest } = state;
+  return JSON.stringify({ kind: 'fourth-floor-save', exportedAt: new Date().toISOString(), state: rest }, null, 2);
+}
+
+function importSave(text, currentSettings) {
+  const obj = JSON.parse(text);
+  if (obj.kind !== 'fourth-floor-save') throw new Error('这不是四楼的存档文件');
+  const state = migrate(obj.state);
+  state.settings = currentSettings || defaultSettings();
+  return state;
+}
+
+return { SAVE_KEY, SETTINGS_KEY, defaultSettings, newState, load, save, reset, migrate, exportSave, importSave };
+});
+__def("src/art/scenes.js", () => {
+// Painted backgrounds, drawn as SVG. One drawing per room; time of day and rain are overlays.
+// Canvas is 1600x900; the stage scales it with preserveAspectRatio="xMidYMid slice".
+
+const W = 1600, H = 900;
+
+const TIMES = {
+  dawn:  { sky: ['#f3c9a8', '#c9d3e6'], tint: '#ffb98a', tintA: 0.10, lamps: false, sun: '#fff1d6' },
+  day:   { sky: ['#bfdcef', '#eef3ea'], tint: '#ffffff', tintA: 0.00, lamps: false, sun: '#fffbe9' },
+  dusk:  { sky: ['#f19a62', '#6f6496'], tint: '#ff9a5c', tintA: 0.16, lamps: true,  sun: '#ffd29a' },
+  night: { sky: ['#141a33', '#2f3560'], tint: '#141a40', tintA: 0.34, lamps: true,  sun: '#cfd8ff' }
+};
+
+function rng(seed) {
+  let s = seed >>> 0;
+  return () => ((s = (s * 1664525 + 1013904223) >>> 0) / 4294967296);
+}
+
+function defs(time, weather) {
+  const T = TIMES[time] || TIMES.day;
+  const rain = weather === 'rain';
+  const sky = rain ? (time === 'night' ? ['#151a28', '#2b3142'] : ['#8d97a6', '#c3c8cf']) : T.sky;
+  return `
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="${sky[0]}"/><stop offset="1" stop-color="${sky[1]}"/>
+    </linearGradient>
+    <radialGradient id="lamp" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#ffe2a8" stop-opacity="0.85"/>
+      <stop offset="0.35" stop-color="#ffc977" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#ffb35c" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="vignette" cx="0.5" cy="0.45" r="0.75">
+      <stop offset="0.55" stop-color="#000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#1b1208" stop-opacity="0.38"/>
+    </radialGradient>
+    <linearGradient id="floorWood" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b98a5e"/><stop offset="1" stop-color="#8a5f3c"/>
+    </linearGradient>
+    <linearGradient id="wallWarm" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f1e3c8"/><stop offset="1" stop-color="#e2cfaa"/>
+    </linearGradient>
+    <filter id="soft" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="1.2"/></filter>
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
+    <filter id="paper">
+      <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="7" result="n"/>
+      <feColorMatrix in="n" type="matrix" values="0 0 0 0 0.45  0 0 0 0 0.36  0 0 0 0 0.25  0 0 0 0.09 0"/>
+    </filter>
+  </defs>`;
+}
+
+// A window that shows the outside: sky, a low city line, maybe the bridge, rain streaks.
+function windowView(x, y, w, h, time, weather, opts = {}) {
+  const T = TIMES[time] || TIMES.day;
+  const r = rng(x * 7 + y);
+  const id = `win${x}${y}`;
+  let city = '';
+  const base = y + h * (opts.horizon ?? 0.72);
+  let cx = x - 10;
+  while (cx < x + w + 10) {
+    const bw = 30 + r() * 60, bh = 30 + r() * h * 0.35;
+    city += `<rect x="${cx.toFixed(1)}" y="${(base - bh).toFixed(1)}" width="${bw.toFixed(1)}" height="${(bh + h).toFixed(1)}" fill="${time === 'night' ? '#1d2140' : '#8f8aa3'}" opacity="${time === 'night' ? 0.95 : 0.55}"/>`;
+    if (T.lamps) {
+      for (let k = 0; k < 4; k++) {
+        if (r() < 0.55) city += `<rect x="${(cx + 6 + r() * (bw - 14)).toFixed(1)}" y="${(base - bh + 8 + r() * (bh - 12)).toFixed(1)}" width="5" height="7" fill="#ffd98a" opacity="${0.6 + r() * 0.4}"/>`;
+      }
+    }
+    cx += bw + 4;
+  }
+  const stars = time === 'night' && weather !== 'rain'
+    ? Array.from({ length: 14 }, () => `<circle cx="${(x + r() * w).toFixed(1)}" cy="${(y + r() * h * 0.5).toFixed(1)}" r="${(0.8 + r() * 1.4).toFixed(1)}" fill="#fff" opacity="${0.4 + r() * 0.6}"/>`).join('')
+    : '';
+  const sun = !opts.noSun && weather !== 'rain' && time !== 'day'
+    ? `<circle cx="${x + w * 0.72}" cy="${y + h * (time === 'night' ? 0.22 : 0.5)}" r="${time === 'night' ? 16 : 28}" fill="${T.sun}" opacity="0.9"/>`
+    : '';
+  const streaks = weather === 'rain'
+    ? Array.from({ length: Math.round(w / 9) }, () => {
+        const sx = x + r() * w, sy = y + r() * h, len = 18 + r() * 30;
+        return `<line x1="${sx.toFixed(1)}" y1="${sy.toFixed(1)}" x2="${(sx - 4).toFixed(1)}" y2="${(sy + len).toFixed(1)}" stroke="#dfe7f2" stroke-width="1.2" opacity="0.45"/>`;
+      }).join('')
+    : '';
+  return `
+  <clipPath id="${id}"><rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4"/></clipPath>
+  <g clip-path="url(#${id})">
+    <rect x="${x}" y="${y}" width="${w}" height="${h}" fill="url(#sky)"/>
+    ${stars}${sun}
+    ${opts.bridge ? bridge(x, base - 10, w, time) : ''}
+    ${city}${streaks}
+  </g>`;
+}
+
+function bridge(x, y, w, time) {
+  const lights = TIMES[time]?.lamps;
+  let s = `<path d="M${x - 20} ${y} Q ${x + w * 0.5} ${y - 70} ${x + w + 20} ${y}" stroke="${time === 'night' ? '#39406b' : '#6e6a85'}" stroke-width="6" fill="none"/>`;
+  s += `<rect x="${x - 20}" y="${y}" width="${w + 40}" height="8" fill="${time === 'night' ? '#2d3358' : '#77738d'}"/>`;
+  for (let i = 0; i <= 10; i++) {
+    const px = x + (w * i) / 10;
+    s += `<line x1="${px}" y1="${y}" x2="${px}" y2="${y - 70 * (1 - Math.pow((i - 5) / 5, 2))}" stroke="${time === 'night' ? '#39406b' : '#6e6a85'}" stroke-width="2"/>`;
+    if (lights) s += `<circle cx="${px}" cy="${y - 2}" r="3" fill="#ffd27a"/>`;
+  }
+  if (lights) s += `<circle cx="${x + w * 0.5}" cy="${y - 74}" r="5" fill="#ff6b5a"><animate attributeName="opacity" values="1;0.2;1" dur="2.4s" repeatCount="indefinite"/></circle>`;
+  return s;
+}
+
+// Glows are collected while a room draws and painted above the time-of-day tint,
+// so lamps stay warm at night instead of being darkened with the room.
+let GLOWS = [];
+function lampGlow(cx, cy, r, on) {
+  if (!on) return '';
+  GLOWS.push(`<circle cx="${cx}" cy="${cy}" r="${r}" fill="url(#lamp)" style="mix-blend-mode:screen"><animate attributeName="r" values="${r};${r * 1.03};${r}" dur="5s" repeatCount="indefinite"/></circle>`);
+  return '';
+}
+
+function floorBoards(y0) {
+  let s = `<rect x="0" y="${y0}" width="${W}" height="${H - y0}" fill="url(#floorWood)"/>`;
+  for (let i = 1; i < 7; i++) {
+    const y = y0 + (H - y0) * Math.pow(i / 7, 1.4);
+    s += `<line x1="0" y1="${y.toFixed(1)}" x2="${W}" y2="${y.toFixed(1)}" stroke="#6f4a2c" stroke-width="1.5" opacity="0.35"/>`;
+  }
+  return s;
+}
+
+function pothos(x, y) {
+  let s = `<path d="M${x - 34} ${y} h68 l-8 46 h-52 z" fill="#c8775a"/>`;
+  const r = rng(x + y);
+  for (let v = 0; v < 4; v++) {
+    let px = x - 20 + v * 13, py = y + 4;
+    let d = `M${px} ${py}`;
+    for (let k = 0; k < 7; k++) {
+      const nx = px + (r() - 0.5) * 40 + (v - 1.5) * 8, ny = py + 22 + r() * 14;
+      d += ` Q ${px + (r() - 0.5) * 30} ${py + 10} ${nx.toFixed(1)} ${ny.toFixed(1)}`;
+      s += `<ellipse cx="${nx.toFixed(1)}" cy="${ny.toFixed(1)}" rx="11" ry="7" fill="${r() < 0.5 ? '#5f9a52' : '#78b062'}" transform="rotate(${(r() * 80 - 40).toFixed(0)} ${nx.toFixed(1)} ${ny.toFixed(1)})"/>`;
+      px = nx; py = ny;
+    }
+    s = `<path d="${d}" stroke="#4d7d43" stroke-width="2.5" fill="none"/>` + s;
+  }
+  for (let k = 0; k < 8; k++) s += `<ellipse cx="${x - 26 + k * 7}" cy="${y - 6 - (k % 3) * 6}" rx="12" ry="8" fill="#6aa65a"/>`;
+  return s;
+}
+
+function stickyNotes(x, y, cols, rows, seed) {
+  const r = rng(seed), colors = ['#ffe58a', '#ffc2a8', '#b9e3c6', '#bcd6f5', '#f6c6e3'];
+  let s = '';
+  for (let i = 0; i < cols; i++) for (let j = 0; j < rows; j++) {
+    if (r() < 0.25) continue;
+    const nx = x + i * 46 + r() * 8, ny = y + j * 50 + r() * 8;
+    s += `<g transform="rotate(${(r() * 14 - 7).toFixed(1)} ${nx + 18} ${ny + 18})"><rect x="${nx}" y="${ny}" width="38" height="38" fill="${colors[Math.floor(r() * colors.length)]}"/>`;
+    for (let l = 0; l < 3; l++) s += `<line x1="${nx + 6}" y1="${ny + 10 + l * 9}" x2="${nx + 14 + r() * 18}" y2="${ny + 10 + l * 9}" stroke="#7b6a58" stroke-width="1.6" opacity="0.6"/>`;
+    s += `</g>`;
+  }
+  return s;
+}
+
+// ─────────────────────────── rooms ───────────────────────────
+
+function living(time, weather) {
+  const lamps = TIMES[time].lamps || weather === 'rain';
+  return `
+  <rect width="${W}" height="${H}" fill="url(#wallWarm)"/>
+  <rect x="0" y="0" width="${W}" height="40" fill="#d8c29b"/>
+  ${floorBoards(640)}
+  <rect x="0" y="628" width="${W}" height="16" fill="#a77d55"/>
+  <!-- window -->
+  <rect x="150" y="120" width="520" height="400" fill="#8a6a4a" rx="8"/>
+  ${windowView(166, 136, 488, 368, time, weather)}
+  <line x1="410" y1="136" x2="410" y2="504" stroke="#8a6a4a" stroke-width="10"/>
+  <line x1="166" y1="320" x2="654" y2="320" stroke="#8a6a4a" stroke-width="8"/>
+  <path d="M130 108 q 60 210 0 430 h 40 q 40 -215 0 -430 z" fill="#e6b392" opacity="0.92"/>
+  <path d="M690 108 q -60 210 0 430 h -40 q -40 -215 0 -430 z" fill="#e6b392" opacity="0.92"/>
+  <rect x="140" y="520" width="540" height="22" fill="#9a7552" rx="4"/>
+  ${pothos(560, 520)}
+  <!-- residents chart -->
+  <g transform="rotate(-2 930 230)">
+    <rect x="800" y="120" width="300" height="230" fill="#fbf6ea" stroke="#d9cbb0"/>
+    <rect x="820" y="140" width="125" height="85" fill="none" stroke="#5b7c99" stroke-width="3"/>
+    <rect x="955" y="140" width="125" height="85" fill="none" stroke="#d9825b" stroke-width="3"/>
+    <rect x="820" y="240" width="125" height="90" fill="none" stroke="#6a9a6e" stroke-width="3"/>
+    <rect x="955" y="240" width="125" height="90" fill="none" stroke="#b79b70" stroke-width="3" stroke-dasharray="6 5"/>
+    <circle cx="882" cy="180" r="14" fill="#5b7c99"/><circle cx="1017" cy="180" r="14" fill="#d9825b"/>
+    <circle cx="882" cy="282" r="14" fill="#6a9a6e"/><text x="1017" y="292" font-size="30" text-anchor="middle" fill="#b79b70">?</text>
+    <circle cx="1060" cy="318" r="7" fill="#c9a36b"/>
+    <circle cx="950" cy="124" r="6" fill="#d24b3e"/>
+  </g>
+  <!-- floor lamp -->
+  <line x1="1460" y1="250" x2="1460" y2="640" stroke="#4a3a2a" stroke-width="6"/>
+  <ellipse cx="1460" cy="642" rx="40" ry="8" fill="#4a3a2a"/>
+  <path d="M1400 250 h120 l-26 -80 h-68 z" fill="${lamps ? '#ffe4ad' : '#e9d6b3'}" stroke="#c6a678" stroke-width="2"/>
+  ${lampGlow(1460, 230, 340, lamps)}
+  <!-- sofa -->
+  <g>
+    <rect x="980" y="470" width="420" height="190" rx="40" fill="#7f8f6a"/>
+    <rect x="950" y="510" width="80" height="170" rx="30" fill="#71815e"/>
+    <rect x="1350" y="510" width="80" height="170" rx="30" fill="#71815e"/>
+    <rect x="1020" y="560" width="340" height="90" rx="22" fill="#8c9c76"/>
+    <rect x="1050" y="500" width="110" height="80" rx="18" fill="#e7b25c" transform="rotate(-8 1105 540)"/>
+    <rect x="1230" y="505" width="100" height="74" rx="18" fill="#d7a9a0" transform="rotate(6 1280 540)"/>
+    <rect x="1090" y="410" width="90" height="120" fill="#efe7d6" stroke="#a89474" transform="rotate(-12 1135 470)"/>
+  </g>
+  <!-- folding table -->
+  <g transform="translate(470 40)">
+  <ellipse cx="700" cy="720" rx="190" ry="40" fill="#5a3d26" opacity="0.25"/>
+  <rect x="520" y="660" width="360" height="22" rx="6" fill="#a87b4f"/>
+  <line x1="560" y1="682" x2="540" y2="790" stroke="#7b5636" stroke-width="10"/>
+  <line x1="840" y1="682" x2="860" y2="790" stroke="#7b5636" stroke-width="10"/>
+  <rect x="610" y="634" width="46" height="28" rx="6" fill="#f4f0e6"/><path d="M656 640 q 16 6 0 18" stroke="#f4f0e6" stroke-width="5" fill="none"/>
+  <rect x="740" y="642" width="70" height="20" rx="3" fill="#c96f4e"/>
+  </g>`;
+}
+
+function kitchen(time, weather) {
+  const lamps = TIMES[time].lamps || weather === 'rain';
+  let tiles = '';
+  for (let x = 0; x < W; x += 64) for (let y = 300; y < 640; y += 48) tiles += `<rect x="${x + ((y / 48) % 2) * 32}" y="${y}" width="62" height="46" fill="#e8efe9" stroke="#cfd9d2" stroke-width="2"/>`;
+  return `
+  <rect width="${W}" height="${H}" fill="#e4ddc8"/>
+  ${tiles}
+  ${floorBoards(700)}
+  <!-- small window -->
+  <rect x="660" y="90" width="330" height="200" fill="#8a6a4a" rx="6"/>
+  ${windowView(674, 104, 302, 172, time, weather, { horizon: 0.8 })}
+  <line x1="825" y1="104" x2="825" y2="276" stroke="#8a6a4a" stroke-width="7"/>
+  <!-- shelves -->
+  <rect x="1140" y="150" width="380" height="14" fill="#9a7552"/>
+  ${[0, 1, 2, 3, 4].map(i => `<rect x="${1160 + i * 70}" y="${102 + (i % 2) * 8}" width="44" height="${48 - (i % 2) * 8}" rx="6" fill="${['#c8775a', '#e2c38a', '#7fa0b8', '#d9d2c3', '#9ab48a'][i]}"/>`).join('')}
+  <!-- counter -->
+  <rect x="560" y="560" width="1040" height="150" fill="#b8916b"/>
+  <rect x="540" y="540" width="1060" height="30" rx="6" fill="#efe6d6"/>
+  ${[0, 1, 2, 3].map(i => `<rect x="${600 + i * 250}" y="590" width="220" height="100" rx="6" fill="#a98460" stroke="#8b6a4b"/><circle cx="${700 + i * 250}" cy="640" r="5" fill="#6d4f35"/>`).join('')}
+  <!-- stove + clay pot -->
+  <rect x="1180" y="520" width="240" height="24" rx="4" fill="#3d3a38"/>
+  <path d="M1230 520 q 0 -70 70 -70 q 70 0 70 70 z" fill="#7a4a35"/>
+  <ellipse cx="1300" cy="452" rx="44" ry="10" fill="#5e3828"/>
+  <circle cx="1300" cy="440" r="8" fill="#5e3828"/>
+  ${lamps ? `<path d="M1285 430 q -14 -30 6 -55 q 16 -20 -2 -45" stroke="#fff" stroke-width="5" fill="none" opacity="0.35" filter="url(#soft)"><animate attributeName="opacity" values="0.15;0.4;0.15" dur="4s" repeatCount="indefinite"/></path>` : ''}
+  <!-- fridge -->
+  <rect x="150" y="190" width="300" height="520" rx="22" fill="#f3efe6" stroke="#cfc6b4" stroke-width="3"/>
+  <line x1="150" y1="390" x2="450" y2="390" stroke="#cfc6b4" stroke-width="3"/>
+  <rect x="410" y="250" width="12" height="90" rx="6" fill="#bdb4a0"/><rect x="410" y="420" width="12" height="120" rx="6" fill="#bdb4a0"/>
+  ${stickyNotes(172, 210, 5, 3, 11)}
+  ${stickyNotes(180, 410, 5, 2, 23)}
+  <!-- pendant lamp -->
+  <line x1="1040" y1="0" x2="1040" y2="330" stroke="#3a3027" stroke-width="3"/>
+  <path d="M990 330 h100 q -10 -46 -50 -46 q -40 0 -50 46 z" fill="#c35f3a"/>
+  ${lampGlow(1040, 360, 300, lamps)}`;
+}
+
+function rooftop(time, weather) {
+  const r = rng(91);
+  return `
+  <rect width="${W}" height="${H}" fill="url(#sky)"/>
+  ${windowView(0, 0, W, 700, time, weather, { bridge: true, horizon: 0.82 })}
+  ${time === 'dusk' && weather !== 'rain' ? `<circle cx="1180" cy="520" r="90" fill="#ffcf8a" opacity="0.65" filter="url(#glow)"/>` : ''}
+  <!-- parapet & floor -->
+  <rect x="0" y="640" width="${W}" height="${H - 640}" fill="#a49a8c"/>
+  <rect x="0" y="600" width="${W}" height="60" fill="#c3b8a6"/>
+  ${Array.from({ length: 20 }, (_, i) => `<line x1="${i * 84}" y1="600" x2="${i * 84}" y2="660" stroke="#a89d8b" stroke-width="2"/>`).join('')}
+  ${Array.from({ length: 30 }, () => `<rect x="${(r() * W).toFixed(0)}" y="${(680 + r() * 200).toFixed(0)}" width="${(20 + r() * 50).toFixed(0)}" height="3" fill="#8e8476" opacity="0.6"/>`).join('')}
+  <!-- clothesline -->
+  <line x1="100" y1="330" x2="100" y2="660" stroke="#5c5149" stroke-width="7"/>
+  <line x1="1000" y1="300" x2="1000" y2="660" stroke="#5c5149" stroke-width="7"/>
+  <path d="M100 340 Q 550 400 1000 310" stroke="#ede5d8" stroke-width="2" fill="none"/>
+  <g>
+    <path d="M250 368 l 30 -8 l 20 14 l 22 -4 l -6 120 h -80 l 0 -100 z" fill="#f2f0ea"><animateTransform attributeName="transform" type="rotate" values="-2 280 365;2 280 365;-2 280 365" dur="5s" repeatCount="indefinite"/></path>
+    <path d="M520 388 l 32 -6 l 20 12 l 26 -2 l -4 140 h -86 z" fill="#8fb3c9"><animateTransform attributeName="transform" type="rotate" values="2 555 385;-2 555 385;2 555 385" dur="6s" repeatCount="indefinite"/></path>
+    <path d="M760 370 l 70 -8 l -8 90 h -56 z" fill="#e2a46a"><animateTransform attributeName="transform" type="rotate" values="-3 795 365;3 795 365;-3 795 365" dur="4.5s" repeatCount="indefinite"/></path>
+  </g>
+  <!-- chairs -->
+  <g fill="#d6553e">
+    <rect x="1160" y="610" width="130" height="18" rx="6"/><rect x="1170" y="520" width="110" height="96" rx="14"/>
+    <rect x="1168" y="626" width="10" height="90"/><rect x="1272" y="626" width="10" height="90"/>
+  </g>
+  <g fill="#3f8fa3">
+    <rect x="1340" y="620" width="130" height="18" rx="6"/><rect x="1350" y="530" width="110" height="96" rx="14"/>
+    <rect x="1348" y="636" width="10" height="90"/><rect x="1452" y="636" width="10" height="90"/>
+  </g>
+  <!-- mint -->
+  <path d="M1500 760 h80 l-10 70 h-60 z" fill="#b26a4a"/>
+  ${Array.from({ length: 16 }, (_, i) => `<ellipse cx="${1510 + (i % 6) * 12}" cy="${745 - Math.floor(i / 6) * 18}" rx="12" ry="8" fill="${i % 2 ? '#6fb36a' : '#86c47b'}"/>`).join('')}
+  ${weather === 'rain' ? Array.from({ length: 140 }, () => { const x = r() * W, y = r() * H; return `<line x1="${x.toFixed(0)}" y1="${y.toFixed(0)}" x2="${(x - 6).toFixed(0)}" y2="${(y + 34).toFixed(0)}" stroke="#dbe4ef" stroke-width="1.4" opacity="0.5"/>`; }).join('') : ''}`;
+}
+
+function myroom(time, weather) {
+  const lamps = TIMES[time].lamps || weather === 'rain';
+  return `
+  <rect width="${W}" height="${H}" fill="#e9dccb"/>
+  <rect x="0" y="0" width="${W}" height="${H}" fill="#d6c6ad" opacity="0.35"/>
+  ${floorBoards(680)}
+  <!-- big east window -->
+  <rect x="520" y="90" width="560" height="440" fill="#8a6a4a" rx="8"/>
+  ${windowView(536, 106, 528, 408, time, weather)}
+  <line x1="800" y1="106" x2="800" y2="514" stroke="#8a6a4a" stroke-width="9"/>
+  ${time === 'dawn' && weather !== 'rain' ? `<path d="M536 514 L 300 900 L 1000 900 L 1064 514 Z" fill="#ffe6b8" opacity="0.28"/>` : ''}
+  <!-- desk -->
+  <rect x="480" y="560" width="640" height="24" rx="6" fill="#a87b4f"/>
+  <rect x="500" y="584" width="20" height="180" fill="#875f3b"/><rect x="1080" y="584" width="20" height="180" fill="#875f3b"/>
+  <rect x="900" y="584" width="190" height="100" fill="#956a44"/>
+  <rect x="580" y="520" width="160" height="40" rx="3" fill="#f5efe2" transform="rotate(-3 660 540)"/>
+  <rect x="600" y="500" width="120" height="22" rx="3" fill="#6c8aa8"/>
+  <!-- desk lamp -->
+  <path d="M1010 560 h50 v-8 h-50 z" fill="#3b4048"/>
+  <line x1="1035" y1="552" x2="1000" y2="470" stroke="#3b4048" stroke-width="6"/>
+  <line x1="1000" y1="470" x2="950" y2="430" stroke="#3b4048" stroke-width="6"/>
+  <path d="M920 452 l 40 -40 l 20 30 z" fill="#3b4048"/>
+  ${lampGlow(940, 470, 220, lamps)}
+  <!-- bed -->
+  <rect x="1180" y="560" width="460" height="200" rx="18" fill="#e8e2d6"/>
+  <rect x="1180" y="620" width="460" height="140" rx="10" fill="#9fb3c9"/>
+  <rect x="1200" y="560" width="140" height="70" rx="22" fill="#fbf8f1"/>
+  <rect x="1170" y="460" width="22" height="300" rx="8" fill="#9a7552"/>
+  <!-- chair -->
+  <rect x="680" y="610" width="140" height="18" rx="6" fill="#7b5636"/>
+  <rect x="690" y="520" width="18" height="230" fill="#7b5636"/><rect x="792" y="520" width="18" height="230" fill="#7b5636"/>
+  <!-- shelf with plant -->
+  <rect x="100" y="300" width="260" height="14" fill="#9a7552"/>
+  <path d="M150 300 h50 l-6 -36 h-38 z" fill="#d7a48a"/>
+  ${[0, 1, 2, 3, 4].map(i => `<ellipse cx="${163 + i * 6}" cy="${262 - (i % 2) * 8}" rx="9" ry="13" fill="#8fbf8a" transform="rotate(${-30 + i * 15} ${163 + i * 6} ${262 - (i % 2) * 8})"/>`).join('')}
+  ${[0, 1, 2, 3, 4, 5].map(i => `<rect x="${230 + i * 20}" y="${236 + (i % 3) * 6}" width="16" height="${64 - (i % 3) * 6}" fill="${['#c96f4e', '#6c8aa8', '#e1b866', '#8a9f72', '#b28aa8', '#d9cdb5'][i]}"/>`).join('')}`;
+}
+
+function bookshop(time, weather) {
+  const lamps = true;
+  const r = rng(5);
+  const palette = ['#8c3b2e', '#c4733f', '#d8b25f', '#5b7a5a', '#3f5a73', '#7d5c7a', '#b59e7e', '#e2d4b5', '#6f4b33'];
+  const shelf = (x, y, w, h, rows) => {
+    let s = `<rect x="${x}" y="${y}" width="${w}" height="${h}" fill="#6b4a2f"/>`;
+    const rh = h / rows;
+    for (let k = 0; k < rows; k++) {
+      const by = y + k * rh;
+      s += `<rect x="${x}" y="${by + rh - 10}" width="${w}" height="10" fill="#4f3522"/>`;
+      let bx = x + 8;
+      while (bx < x + w - 14) {
+        const bw = 10 + r() * 18, bh = rh * (0.55 + r() * 0.35);
+        const tilt = r() < 0.06 ? (r() * 14 + 4) : 0;
+        s += `<rect x="${bx.toFixed(1)}" y="${(by + rh - 10 - bh).toFixed(1)}" width="${bw.toFixed(1)}" height="${bh.toFixed(1)}" fill="${palette[Math.floor(r() * palette.length)]}" transform="rotate(${tilt.toFixed(1)} ${(bx + bw).toFixed(1)} ${(by + rh - 10).toFixed(1)})"/>`;
+        if (r() < 0.4) s += `<rect x="${(bx + 2).toFixed(1)}" y="${(by + rh - 10 - bh * 0.7).toFixed(1)}" width="${(bw - 4).toFixed(1)}" height="3" fill="#f3e7c8" opacity="0.6"/>`;
+        bx += bw + 2;
+      }
+    }
+    return s;
+  };
+  return `
+  <rect width="${W}" height="${H}" fill="#5a3e28"/>
+  ${floorBoards(720)}
+  ${shelf(40, 40, 420, 680, 6)}
+  ${shelf(1140, 40, 420, 680, 6)}
+  <!-- glass door -->
+  <rect x="560" y="120" width="480" height="600" fill="#3a2a1c"/>
+  ${windowView(580, 140, 200, 560, time === 'day' ? 'day' : time, weather, { horizon: 0.85 })}
+  ${windowView(820, 140, 200, 560, time === 'day' ? 'day' : time, weather, { horizon: 0.85, noSun: true })}
+  <text x="800" y="230" font-size="46" text-anchor="middle" fill="#f3d9a0" opacity="0.85" font-family="serif">半页</text>
+  <!-- counter -->
+  <rect x="480" y="600" width="640" height="200" fill="#7a5233"/>
+  <rect x="460" y="580" width="680" height="30" rx="6" fill="#9b6c44"/>
+  <rect x="980" y="640" width="110" height="60" rx="4" fill="#6a4529" stroke="#4a301c"/>
+  <circle cx="1035" cy="670" r="7" fill="#d9b25f"/>
+  <!-- tea + stacked magazines (where the cat sleeps) -->
+  <rect x="520" y="540" width="120" height="42" fill="#d9cdb5"/><rect x="525" y="520" width="110" height="22" fill="#b28aa8"/>
+  <rect x="700" y="548" width="40" height="34" rx="5" fill="#f4efe4"/>
+  ${[0, 1, 2].map(i => `<line x1="${400 + i * 400}" y1="0" x2="${400 + i * 400}" y2="120" stroke="#2c1f14" stroke-width="3"/><path d="M${370 + i * 400} 120 h60 q -6 -34 -30 -34 q -24 0 -30 34 z" fill="#d79a4a"/>${lampGlow(400 + i * 400, 150, 280, lamps)}`).join('')}`;
+}
+
+function stairs(time, weather) {
+  const lamps = time !== 'day';
+  let steps = '';
+  for (let i = 0; i < 9; i++) {
+    const x = 380 + i * 110, y = 820 - i * 70;
+    steps += `<rect x="${x}" y="${y}" width="140" height="70" fill="${i % 2 ? '#bfb4a3' : '#b3a895'}"/><rect x="${x}" y="${y}" width="140" height="8" fill="#d7ccba"/>`;
+  }
+  return `
+  <rect width="${W}" height="${H}" fill="#d9cfbd"/>
+  <rect x="0" y="0" width="${W}" height="${H}" fill="#9fae9a" opacity="0.18"/>
+  <rect x="0" y="560" width="${W}" height="340" fill="#cdbfa8"/>
+  <rect x="0" y="540" width="${W}" height="24" fill="#8fa38f" opacity="0.5"/>
+  <!-- peeling paint -->
+  <path d="M220 200 q 30 -10 50 10 q -10 30 -40 20 z" fill="#efe7d8"/><path d="M1300 300 q 40 -6 54 20 q -24 20 -50 4 z" fill="#efe7d8"/>
+  <!-- stair window -->
+  <rect x="1220" y="120" width="220" height="260" fill="#7b6a58" rx="4"/>
+  ${windowView(1232, 132, 196, 236, time, weather)}
+  ${steps}
+  <path d="M380 760 L 1370 130" stroke="#5a4636" stroke-width="10" stroke-linecap="round"/>
+  ${Array.from({ length: 10 }, (_, i) => `<line x1="${400 + i * 100}" y1="${748 - i * 63.6}" x2="${400 + i * 100}" y2="${830 - i * 70}" stroke="#5a4636" stroke-width="4"/>`).join('')}
+  <!-- door of 4F -->
+  <rect x="80" y="230" width="230" height="440" rx="6" fill="#7b4b33"/>
+  <rect x="100" y="250" width="190" height="400" rx="4" fill="#8c5a3d"/>
+  <circle cx="270" cy="460" r="9" fill="#d9b25f"/>
+  <rect x="160" y="300" width="70" height="40" rx="4" fill="#efe2c4"/><text x="195" y="328" font-size="22" text-anchor="middle" fill="#7b4b33">402</text>
+  <!-- bulb -->
+  <line x1="700" y1="0" x2="700" y2="110" stroke="#3a3027" stroke-width="3"/>
+  <circle cx="700" cy="125" r="18" fill="${lamps ? '#fff0c4' : '#e9e2cf'}"/>
+  ${lampGlow(700, 140, 300, lamps)}`;
+}
+
+const ROOMS = { living, kitchen, rooftop, myroom, bookshop, stairs };
+const ROOM_IDS = Object.keys(ROOMS);
+
+function renderScene(room, time = 'day', weather = 'clear') {
+  const T = TIMES[time] || TIMES.day;
+  const draw = ROOMS[room] || ROOMS.living;
+  GLOWS = [];
+  const body = draw(time, weather);
+  const rainDim = weather === 'rain' ? `<rect width="${W}" height="${H}" fill="#3c4a5e" opacity="${time === 'night' ? 0.18 : 0.22}"/>` : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="xMidYMid slice" role="img" aria-label="${room}">
+  ${defs(time, weather)}
+  ${body}
+  <rect width="${W}" height="${H}" fill="${T.tint}" opacity="${T.tintA}" style="mix-blend-mode:multiply"/>
+  ${rainDim}
+  ${GLOWS.join('')}
+  <rect width="${W}" height="${H}" filter="url(#paper)"/>
+  <rect width="${W}" height="${H}" fill="url(#vignette)"/>
+</svg>`;
+}
+
+return { TIMES, ROOM_IDS, renderScene };
+});
+__def("src/art/portraits.js", () => {
+// Half-body portraits, 400x560 SVG. Faces: normal, smile, sad, surprised.
+
+const FACES = ['normal', 'smile', 'sad', 'surprised'];
+
+const LOOK = {
+  ache: {
+    skin: '#f3d5bd', shade: '#e4b99c', hair: '#262b3a', hairHi: '#3b4256', eye: '#2b2b33', blush: 0.18, eyeScale: 0.85,
+    back: `<path d="M108 196 Q 100 86 200 82 Q 300 86 292 196 L 296 300 Q 262 314 246 284 L 154 284 Q 138 314 104 300 Z"/>`,
+    front: `<path d="M118 196 Q 118 98 200 92 Q 288 96 286 188 Q 262 150 214 140 Q 196 168 150 176 Q 132 190 126 214 Z"/>`,
+    body: `<path d="M50 560 Q 58 380 200 346 Q 342 380 350 560 Z" fill="#8a929c"/>
+           <path d="M150 352 L 200 420 L 250 352 L 232 344 L 200 386 L 168 344 Z" fill="#f2f0ea"/>
+           <path d="M138 360 L 200 470 L 262 360" stroke="#71798a" stroke-width="5" fill="none"/>
+           <path d="M164 350 Q 180 470 236 520" stroke="#4f7fb2" stroke-width="4" fill="none"/>
+           <rect x="218" y="510" width="44" height="34" rx="5" fill="#f7f5ef" stroke="#4f7fb2" stroke-width="3"/>
+           <rect x="225" y="518" width="16" height="16" fill="#9ab6d8"/>`
+  },
+  xiaoman: {
+    skin: '#f6dcc4', shade: '#ebbf9f', hair: '#9e4f33', hairHi: '#c26a45', eye: '#4a2a1e', blush: 0.36, eyeScale: 1.08,
+    back: `<path d="M116 200 Q 112 92 200 88 Q 288 92 284 200 L 280 262 Q 250 272 240 250 L 160 250 Q 150 272 120 262 Z"/>
+           <circle cx="236" cy="86" r="40"/><circle cx="214" cy="70" r="22"/>`,
+    front: `<path d="M120 200 Q 118 104 200 98 Q 282 102 282 196 L 268 168 L 256 186 L 244 150 L 226 178 L 214 146 L 196 176 L 182 144 L 166 182 L 150 152 L 138 192 Z"/>`,
+    extra: `<line x1="200" y1="58" x2="278" y2="108" stroke="#e6c35b" stroke-width="7" stroke-linecap="round"/>
+            <path d="M272 104 l 12 8 l -4 4 z" fill="#3a3027"/>
+            <ellipse cx="248" cy="238" rx="9" ry="5" fill="#5f8fc4" opacity="0.75" transform="rotate(-20 248 238)"/>`,
+    body: `<path d="M50 560 Q 60 384 200 352 Q 340 384 350 560 Z" fill="#f4f1ea"/>
+           <path d="M110 560 L 128 432 L 272 432 L 290 560 Z" fill="#d9a441"/>
+           <rect x="132" y="370" width="22" height="80" fill="#d9a441" transform="rotate(-8 143 410)"/>
+           <rect x="246" y="370" width="22" height="80" fill="#d9a441" transform="rotate(8 257 410)"/>
+           <circle cx="150" cy="440" r="8" fill="#7a6a4f"/><circle cx="250" cy="440" r="8" fill="#7a6a4f"/>
+           <rect x="172" y="470" width="56" height="44" rx="4" fill="#c99234"/>
+           <circle cx="160" cy="500" r="6" fill="#5f8fc4"/><circle cx="246" cy="528" r="5" fill="#d2584a"/><circle cx="90" cy="470" r="5" fill="#6aa65a"/>`
+  },
+  laozhou: {
+    skin: '#ebc7a4', shade: '#d6a982', hair: '#b8b2a8', hairHi: '#d4cfc6', eye: '#3d2f24', blush: 0.14, eyeScale: 0.8,
+    back: `<path d="M114 210 Q 108 130 150 108 L 170 140 Q 136 160 138 220 Z"/><path d="M286 210 Q 292 130 250 108 L 230 140 Q 264 160 262 220 Z"/>
+           <path d="M150 108 Q 200 84 250 108 L 238 118 Q 200 104 162 118 Z"/>`,
+    front: `<path d="M124 214 Q 120 150 150 124 L 156 150 Q 136 170 136 222 Z"/><path d="M276 214 Q 280 150 250 124 L 244 150 Q 264 170 264 222 Z"/>`,
+    extra: `<g fill="none" stroke="#5a4a3a" stroke-width="4"><circle cx="168" cy="208" r="24"/><circle cx="232" cy="208" r="24"/><path d="M192 206 Q 200 200 208 206"/><path d="M144 204 L 124 198"/><path d="M256 204 L 276 198"/></g>
+            <g stroke="#c49a76" stroke-width="2" fill="none" opacity="0.8"><path d="M142 222 q -6 6 -4 12"/><path d="M258 222 q 6 6 4 12"/><path d="M176 158 q 24 -6 48 0"/></g>
+            <path d="M178 266 Q 200 276 222 266" stroke="#9a8e80" stroke-width="5" fill="none" opacity="0.55"/>`,
+    body: `<path d="M50 560 Q 56 384 200 350 Q 344 384 350 560 Z" fill="#8a6a4a"/>
+           <path d="M164 352 L 200 404 L 236 352 Z" fill="#ece4d3"/>
+           <path d="M174 354 L 200 420 L 200 560" stroke="#6f5338" stroke-width="5" fill="none"/>
+           ${[440, 480, 520].map(y => `<circle cx="212" cy="${y}" r="6" fill="#d9c09a"/>`).join('')}
+           <path d="M80 470 l 50 -10 v 50 l -50 6 z" fill="#7a5c3f"/>`
+  },
+  nico: {
+    skin: '#ddae86', shade: '#c9946a', hair: '#3e2a20', hairHi: '#5a3e2e', eye: '#3a2a1a', blush: 0.2, eyeScale: 1,
+    back: `<path d="M116 210 Q 110 110 200 100 Q 290 110 284 210 L 282 250 Q 250 250 240 236 L 160 236 Q 150 250 118 250 Z"/>`,
+    front: [
+      [130, 150, 30], [160, 118, 32], [200, 104, 34], [240, 116, 32], [272, 148, 30],
+      [146, 132, 22], [186, 96, 22], [224, 98, 24], [258, 124, 22], [124, 186, 20], [278, 184, 20]
+    ].map(([x, y, r]) => `<circle cx="${x}" cy="${y}" r="${r}"/>`).join(''),
+    extra: `<g fill="#a5704c" opacity="0.6">${[[160, 236], [170, 242], [152, 244], [240, 236], [230, 242], [248, 244], [200, 230]].map(([x, y]) => `<circle cx="${x}" cy="${y}" r="2.6"/>`).join('')}</g>`,
+    body: `<path d="M44 560 Q 54 380 200 346 Q 346 380 356 560 Z" fill="#6a9a6e"/>
+           <path d="M156 350 Q 200 384 244 350" stroke="#57835b" stroke-width="12" fill="none"/>
+           ${[400, 440, 480, 520].map(y => `<path d="M70 ${y} Q 200 ${y + 14} 330 ${y}" stroke="#7caa80" stroke-width="3" fill="none" opacity="0.6"/>`).join('')}
+           <rect x="250" y="460" width="40" height="54" rx="4" fill="#e8dcc0" transform="rotate(10 270 487)"/>`
+  }
+};
+
+function eyes(face, L) {
+  const s = L.eyeScale;
+  const col = L.eye;
+  const one = (x, mirror) => {
+    switch (face) {
+      case 'smile':
+        return `<path d="M${x - 12} 210 Q ${x} ${198 - 2 * s} ${x + 12} 210" stroke="${col}" stroke-width="4.5" stroke-linecap="round" fill="none"/>`;
+      case 'sad':
+        return `<ellipse cx="${x}" cy="213" rx="${8 * s}" ry="${9 * s}" fill="${col}"/><circle cx="${x + 3}" cy="209" r="2.6" fill="#fff"/>
+                <path d="M${x - 13} ${mirror ? 202 : 206} L ${x + 13} ${mirror ? 206 : 202}" stroke="${col}" stroke-width="3" stroke-linecap="round"/>`;
+      case 'surprised':
+        return `<ellipse cx="${x}" cy="206" rx="${11 * s}" ry="${14 * s}" fill="#fff" stroke="${col}" stroke-width="3"/><circle cx="${x}" cy="207" r="${5.5 * s}" fill="${col}"/><circle cx="${x + 2}" cy="204" r="2" fill="#fff"/>`;
+      default:
+        return `<ellipse cx="${x}" cy="208" rx="${9 * s}" ry="${12 * s}" fill="${col}"/><circle cx="${x + 3}" cy="203" r="3.4" fill="#fff"/><circle cx="${x - 3}" cy="213" r="1.6" fill="#fff" opacity="0.7"/>
+                <path d="M${x - 13} 199 Q ${x} ${192} ${x + 13} 199" stroke="${col}" stroke-width="3.5" stroke-linecap="round" fill="none"/>`;
+    }
+  };
+  return one(168, false) + one(232, true);
+}
+
+function brows(face, L) {
+  const c = L.hair === '#b8b2a8' ? '#8e877c' : L.hair;
+  switch (face) {
+    case 'smile': return `<path d="M152 180 Q 168 170 184 178" stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M216 178 Q 232 170 248 180" stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    case 'sad': return `<path d="M152 184 L 184 174" stroke="${c}" stroke-width="5" stroke-linecap="round"/><path d="M216 174 L 248 184" stroke="${c}" stroke-width="5" stroke-linecap="round"/>`;
+    case 'surprised': return `<path d="M150 172 Q 168 158 186 168" stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M214 168 Q 232 158 250 172" stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+    default: return `<path d="M152 182 Q 168 176 184 180" stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"/><path d="M216 180 Q 232 176 248 182" stroke="${c}" stroke-width="5" stroke-linecap="round" fill="none"/>`;
+  }
+}
+
+function mouth(face) {
+  switch (face) {
+    case 'smile': return `<path d="M182 250 Q 200 270 218 250 Q 200 260 182 250 Z" fill="#b5524a"/><path d="M186 252 Q 200 258 214 252" stroke="#fff" stroke-width="3" fill="none" opacity="0.8"/>`;
+    case 'sad': return `<path d="M188 260 Q 200 250 212 260" stroke="#9a4a42" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+    case 'surprised': return `<ellipse cx="200" cy="258" rx="8" ry="10" fill="#9a3f3a"/>`;
+    default: return `<path d="M188 254 Q 200 260 212 254" stroke="#9a4a42" stroke-width="4" stroke-linecap="round" fill="none"/>`;
+  }
+}
+
+function person(id, face) {
+  const L = LOOK[id];
+  return `
+  <g fill="${L.hair}">${L.back}</g>
+  ${L.body}
+  <path d="M176 270 L 176 352 Q 200 366 224 352 L 224 270 Z" fill="${L.shade}"/>
+  <ellipse cx="122" cy="214" rx="12" ry="18" fill="${L.shade}"/><ellipse cx="278" cy="214" rx="12" ry="18" fill="${L.shade}"/>
+  <path d="M122 186 Q 122 292 200 296 Q 278 292 278 186 Q 278 104 200 104 Q 122 104 122 186 Z" fill="${L.skin}"/>
+  <ellipse cx="160" cy="236" rx="18" ry="9" fill="#f08a7a" opacity="${face === 'smile' ? L.blush + 0.12 : L.blush}"/>
+  <ellipse cx="240" cy="236" rx="18" ry="9" fill="#f08a7a" opacity="${face === 'smile' ? L.blush + 0.12 : L.blush}"/>
+  <path d="M198 222 Q 194 236 202 238" stroke="${L.shade}" stroke-width="3" fill="none"/>
+  ${eyes(face, L)}${brows(face, L)}${mouth(face)}
+  <g fill="${L.hair}">${L.front}</g>
+  ${L.extra || ''}`;
+}
+
+function cat(face) {
+  const eye = {
+    normal: `<ellipse cx="170" cy="300" rx="11" ry="14" fill="#7a9a3a"/><ellipse cx="170" cy="300" rx="3" ry="11" fill="#1f1a14"/><ellipse cx="230" cy="300" rx="11" ry="14" fill="#7a9a3a"/><ellipse cx="230" cy="300" rx="3" ry="11" fill="#1f1a14"/>`,
+    smile: `<path d="M158 302 Q 170 290 182 302" stroke="#3a2a1a" stroke-width="4" fill="none"/><path d="M218 302 Q 230 290 242 302" stroke="#3a2a1a" stroke-width="4" fill="none"/>`,
+    sad: `<path d="M158 298 L 182 304" stroke="#3a2a1a" stroke-width="4"/><path d="M218 304 L 242 298" stroke="#3a2a1a" stroke-width="4"/>`,
+    surprised: `<circle cx="170" cy="300" r="14" fill="#7a9a3a"/><circle cx="170" cy="300" r="8" fill="#1f1a14"/><circle cx="230" cy="300" r="14" fill="#7a9a3a"/><circle cx="230" cy="300" r="8" fill="#1f1a14"/>`
+  }[face] || '';
+  return `
+  <path d="M90 560 Q 70 420 140 380 L 260 380 Q 330 420 310 560 Z" fill="#e6a35e"/>
+  <path d="M150 560 Q 160 440 200 420 Q 240 440 250 560 Z" fill="#fbf4e8"/>
+  <path d="M300 540 Q 380 500 350 420 Q 340 400 330 420 Q 350 490 290 520 Z" fill="#e6a35e"/>
+  <ellipse cx="200" cy="300" rx="96" ry="82" fill="#e6a35e"/>
+  <path d="M116 260 L 120 180 L 170 236 Z" fill="#e6a35e"/><path d="M284 260 L 280 180 L 230 236 Z" fill="#e6a35e"/>
+  <path d="M126 246 L 128 200 L 156 232 Z" fill="#f2b8a8"/><path d="M274 246 L 272 200 L 244 232 Z" fill="#f2b8a8"/>
+  <path d="M150 330 Q 200 300 250 330 Q 240 382 200 384 Q 160 382 150 330 Z" fill="#fbf4e8"/>
+  <path d="M170 236 l 10 26 M200 228 v 30 M230 236 l -10 26" stroke="#c97f3e" stroke-width="6" stroke-linecap="round"/>
+  ${eye}
+  <path d="M194 324 h12 l -6 8 z" fill="#d97a7a"/>
+  <path d="M200 332 q -8 10 -16 6 M200 332 q 8 10 16 6" stroke="#6a4a3a" stroke-width="2.5" fill="none"/>
+  <g stroke="#fff" stroke-width="1.6" opacity="0.8"><path d="M150 330 L 104 320"/><path d="M150 338 L 106 344"/><path d="M250 330 L 296 320"/><path d="M250 338 L 294 344"/></g>`;
+}
+
+function renderPortrait(id, face = 'normal') {
+  const f = FACES.includes(face) ? face : 'normal';
+  const inner = id === 'cat' ? cat(f) : LOOK[id] ? person(id, f) : '';
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 560" class="portrait-svg" aria-hidden="true">${inner}</svg>`;
+}
+
+const PORTRAIT_IDS = ['ache', 'xiaoman', 'laozhou', 'nico', 'cat'];
+
+return { FACES, renderPortrait, PORTRAIT_IDS };
+});
+__def("story/bible.js", () => {
+// Setting bible for 四楼. Every script line and every future LLM prompt is written against this file.
+
+const WORLD = {
+  title: '四楼',
+  premise:
+    '一栋没有电梯的老公寓，你搬进了四楼那套四室一厅的合租房。楼下是老周的旧书店「半页」，天台能看见河和一座总在修的桥。城市不大，夜里能听见最后一班电车。',
+  place: {
+    living: '客厅：一张旧布沙发，一张折叠饭桌，墙上贴着小满画的四楼住户表，窗台上的绿萝是阿澈的。',
+    kitchen: '厨房：冰箱门上贴满便利贴，灶台上永远有一口老周留下的砂锅。',
+    rooftop: '天台：晾衣绳、两把塑料椅、一盆没人管却活得很好的薄荷。',
+    myroom: '你的房间：朝东，早上有光，书桌对着窗。',
+    bookshop: '楼下「半页」书店：木头书架顶到天花板，收银台后面有一个上了锁的抽屉。',
+    stairs: '楼道：声控灯，三楼那一盏总是不亮。'
+  },
+  rhythm: '现实里每过一天，四楼也过一天。你不来的日子，他们照常生活；你回来，他们会告诉你错过了什么。'
+};
+
+const CHARACTERS = {
+  ache: {
+    id: 'ache',
+    name: '阿澈',
+    age: 28,
+    color: '#5b7c99',
+    role: '急诊科夜班护士',
+    personality: '安静、可靠、嘴上淡淡的，照顾人的方式是行动而不是话。累的时候会更温柔，不会发脾气。',
+    speech: '句子短，常省略主语。很少用感叹号。会说「嗯」「没事」「吃了吗」。',
+    habits: ['白天睡觉，门上挂「睡觉中」的木牌', '在冰箱门上给你留便利贴', '养着窗台那盆绿萝'],
+    likes: ['热豆浆', '下雨天', '没人说话的清晨'],
+    dislikes: ['被问「今天有没有死人」', '香菜'],
+    arc: [
+      '第一章：便利贴从一句话越写越长，开始写到医院里的事。',
+      '第一章：一次夜班回来，第一次在客厅坐下跟你说话，提到一个没救回来的老人。',
+      '后续：在考虑要不要离开急诊，去社区医院；她还没对任何人说。'
+    ],
+    relations: { xiaoman: '把小满当妹妹，嘴上嫌她吵', laozhou: '敬重老周，常帮他看药', nico: '教 Nico 认药名，Nico 叫她「阿姐」' }
+  },
+  xiaoman: {
+    id: 'xiaoman',
+    name: '小满',
+    age: 22,
+    color: '#d9825b',
+    role: '美术学院大四学生',
+    personality: '话多、热情、想到什么说什么。笑得大声，焦虑也写在脸上，但不肯承认自己焦虑。',
+    speech: '语速快，爱用「诶」「对吧对吧」「完蛋了」。会给每个人起外号。',
+    habits: ['衣服上总有颜料', '凌晨还在画画，听同一首歌循环', '给四楼画了一张住户表贴在客厅'],
+    likes: ['橘子汽水', '天台的落日', '被人认真看她的画'],
+    dislikes: ['被问「毕业以后干什么」', '自己画的手'],
+    arc: [
+      '第一章：毕业展只剩两个月，主画一直空着中间一块不敢画。',
+      '第一章：给你看她以前的画，你注意到每一幅里都有一扇关着的门。',
+      '后续：那扇门背后是她小时候的家；她要决定是否画出来。'
+    ],
+    relations: { ache: '崇拜阿澈，偷偷学她泡茶', laozhou: '老周书店的常客，白看画册', nico: '和 Nico 互相教语言，天天斗嘴' }
+  },
+  laozhou: {
+    id: 'laozhou',
+    name: '老周',
+    age: 61,
+    color: '#7a6a4f',
+    role: '楼下旧书店「半页」的店主，也是这栋楼的老住户',
+    personality: '慢、和气、爱做饭，说话带一点老派的幽默。什么都记得，唯独不谈自己的家人。',
+    speech: '叫你「小家伙」或者直接叫名字。爱用「慢慢来」「先吃饭」「书里都写着呢」。',
+    habits: ['每个周六晚上叫全楼上来吃饭', '书店收银台后有一个上锁的抽屉', '每天下午四点准时喂猫'],
+    likes: ['炖汤', '旧诗集', '有人借书还书'],
+    dislikes: ['电话铃', '有人问抽屉里是什么'],
+    arc: [
+      '第一章：饭局上总摆一副多出来的碗筷，没人问。',
+      '第一章：你在书店帮忙时看见他对着一张旧明信片发呆。',
+      '后续：抽屉里是写给女儿却从没寄出的信。'
+    ],
+    relations: { ache: '心疼阿澈太累，总给她留汤', xiaoman: '把小满当孙女宠', nico: '教 Nico 下象棋，故意输' }
+  },
+  nico: {
+    id: 'nico',
+    name: 'Nico',
+    age: 24,
+    color: '#6a9a6e',
+    role: '从里斯本来的交换生，读城市规划',
+    personality: '开朗、好奇、有点笨拙。想家的时候会突然变安静。和你一样离家很远，所以最懂你。',
+    speech: '中文半生不熟，语序偶尔颠倒，会把成语用错。紧张时夹葡萄牙语，比如 obrigado、saudade。',
+    habits: ['每天在天台给家里打视频电话', '拿小本子记新学的中文词', '做很难吃的葡式蛋挞'],
+    likes: ['电车', '桥', '学会一个新词'],
+    dislikes: ['周日下午', '被当成游客'],
+    arc: [
+      '第一章：教你一个词 saudade，说中文里找不到。',
+      '第一章：家里的视频电话有一天没打，他在天台坐到很晚。',
+      '后续：交换学期结束，要不要留下来。'
+    ],
+    relations: { ache: '叫阿澈「阿姐」', xiaoman: '和小满斗嘴，其实很在意她的画展', laozhou: '跟老周学下棋' }
+  },
+  cat: {
+    id: 'cat',
+    name: '房东',
+    color: '#c9a36b',
+    role: '一只橘白色的猫，没人承认是自己养的',
+    personality: '傲慢、会挑人、只在下雨天主动睡在别人腿上。',
+    speech: '喵。',
+    habits: ['白天睡在老周的书堆上', '晚上巡视四楼', '每个人都在偷偷喂它'],
+    likes: ['阿澈的绿萝（会咬）', '暖气片'],
+    dislikes: ['Nico 的蛋挞'],
+    arc: ['第一章：大家发现彼此都在喂它，房东胖了。'],
+    relations: {}
+  }
+};
+
+const CAST_ORDER = ['ache', 'xiaoman', 'laozhou', 'nico', 'cat'];
+
+return { WORLD, CHARACTERS, CAST_ORDER };
+});
+__def("story/lines.js", () => {
+// Shorthands for writing scripts.
+const say = who => (face, text, extra = {}) =>
+  (text === undefined ? { say: who, face: 'normal', text: face, ...extra } : { say: who, face, text, ...extra });
+
+const che = say('ache');
+const man = say('xiaoman');
+const zhou = say('laozhou');
+const nico = say('nico');
+const cat = text => ({ say: 'cat', face: 'normal', text: text || '喵。' });
+const me = text => ({ say: 'me', face: 'normal', text });
+const t = text => ({ text });
+const note = (from, text) => ({ note: from, text });
+const bg = (bg, time, weather) => ({ bg, time, weather });
+const show = (...ids) => ({ show: ids });
+const choice = (...options) => ({ choice: options });
+const opt = (text, then = [], effects = {}) => ({ text, then, ...effects });
+const when = (cond, then, otherwise) => ({ if: cond, then, else: otherwise });
+
+return { che, man, zhou, nico, cat, me, t, note, bg, show, choice, opt, when };
+});
+__def("story/ch1/d00-03.js", () => {
+const { che, man, zhou, nico, cat, me, t, note, bg, show, choice, opt, when } = __req("story/lines.js");
+const __default = [
+  // ───────────────────────── 序章 ─────────────────────────
+  {
+    id: 'd0-arrive', day: 0, slot: 'dusk', title: '搬进来的那天',
+    bg: 'stairs', time: 'dusk', weather: 'rain',
+    steps: [
+      t('雨下了一整个下午。出租车停在一栋没有电梯的老楼前，你拖着两个箱子，站在一家书店的雨棚下。'),
+      t('招牌上写着「半页」，玻璃门里亮着黄灯。'),
+      bg('bookshop', 'dusk', 'rain'), show('laozhou'),
+      zhou('smile', '是四楼新来的吧？钥匙在我这儿，房东托我转交。'),
+      zhou('先别急着上去，衣服都湿了。喝口热水。'),
+      choice(
+        opt('「谢谢，那我坐一会儿。」', [
+          zhou('smile', '坐。这把椅子是全店最好的，别告诉别人。'),
+          t('他倒了一杯水，又从柜台下面摸出一块桂花糕，放在你手边。')
+        ], { aff: { laozhou: 1 } }),
+        opt('「不麻烦了，我先把东西搬上去。」', [
+          zhou('那我帮你抬一个。年纪大了，力气还在。'),
+          t('他没等你推辞，已经拎起了那个更重的箱子。')
+        ])
+      ),
+      zhou('我姓周，大家叫我老周。楼里的事，问我就行。'),
+      zhou('你住的那套是四楼，四个房间，加上你就满了。'),
+      { input: 'name', prompt: '老周掏出一支铅笔，要在钥匙牌上写名字。「怎么称呼你？」', placeholder: '你的名字', fallback: '新来的' },
+      zhou('smile', '{name}。好名字。'),
+      bg('stairs', 'dusk', 'rain'), show(),
+      t('楼道里的声控灯一层一层亮起来，到三楼的时候，那一盏没有亮。'),
+      t('黑暗里，有什么毛茸茸的东西从你脚边擦了过去。'),
+      cat('喵。'),
+      t('一只橘白色的猫，坐在四楼的台阶上看着你，像在审核入住申请。')
+    ]
+  },
+  {
+    id: 'd0-meet', day: 0, slot: 'night', title: '四楼的人',
+    bg: 'living', time: 'night', weather: 'rain',
+    steps: [
+      t('门一开，一股松节油的味道。客厅的灯是暖黄的，沙发上堆着画板。'),
+      show('xiaoman'),
+      man('surprised', '诶？！你就是新室友？完蛋了我还没收拾……'),
+      man('smile', '我是小满，住你隔壁，画画的。脸上这个是颜料不是伤口，别怕。'),
+      man('你带了什么来？快让我看看，我要判断你是哪种人。'),
+      choice(
+        opt('打开那个装满书的箱子', [
+          man('surprised', '全是书……你是那种会在书里夹树叶的人吧？'),
+          man('smile', '楼下老周会爱死你的。'),
+        ], { mem: { item: '一箱书' }, aff: { laozhou: 1 } }),
+        opt('拿出一台旧胶片相机', [
+          man('surprised', '胶片机！可以拍我吗？等我把颜料洗了……不，就这样拍，这才是真实的我。'),
+        ], { mem: { item: '一台胶片相机' }, aff: { xiaoman: 1 } }),
+        opt('从背包里捧出一小盆多肉', [
+          man('smile', '它好小。窗台上那盆绿萝是阿澈姐的，你放在旁边，它们可以做朋友。'),
+        ], { mem: { item: '一盆多肉' }, aff: { ache: 1 } })
+      ),
+      t('楼上传来脚步声。一个高个子的男生从天台下来，手里还举着手机。'),
+      show('xiaoman', 'nico'),
+      nico('smile', '你好你好！我是 Nico，从里斯本来的。我们是……同屋人？'),
+      man('是「室友」。说了八百遍了。'),
+      nico('室友。好。室友，欢迎你来到四楼！我刚刚和我妈妈打电话，她说你要是饿了，我可以做蛋挞。'),
+      man('sad', '求你别。'),
+      t('还有一扇门关着，门把手上挂着一块小木牌：「睡觉中」。'),
+      man('那是阿澈姐，急诊科的护士，上夜班，白天睡觉。她人特别好，就是你可能一个礼拜都碰不到她。'),
+      man('smile', '不过你会知道她在的。'),
+      bg('myroom', 'night', 'rain'), show(),
+      t('你的房间不大，朝东，书桌对着窗。门背后贴着一张黄色便利贴。'),
+      note('ache', '欢迎。热水器要等三分钟才热。毛巾在柜子第二层，新的。'),
+      t('雨还在下。隔壁传来很轻的音乐声，楼下有人在收书店的门。'),
+      t('你躺下的时候，那只猫不知道从哪里溜了进来，在你脚边转了两圈，睡了。'),
+      cat('……'),
+      t('在四楼的第一个晚上，你睡得比想象中好。')
+    ]
+  },
+
+  // ───────────────────────── 第一天 ─────────────────────────
+  {
+    id: 'd1-morning', day: 1, slot: 'dawn', title: '早上七点的厨房',
+    bg: 'kitchen', time: 'dawn',
+    steps: [
+      t('你醒得很早。厨房里很安静，冰箱门上贴满了便利贴，大部分是小满画的小人。'),
+      t('门锁响了。一个穿着灰色外套的人走进来，看见你，愣了一下。'),
+      show('ache'),
+      che('……你是新来的。'),
+      che('smile', '我是阿澈。字条看到了？'),
+      choice(
+        opt('「看到了。热水器真的要等三分钟。」', [
+          che('smile', '嗯。第一天大家都不信。')
+        ], { aff: { ache: 1 } }),
+        opt('「你刚下夜班吗？我煮点东西给你吃？」', [
+          che('surprised', '……你会做饭？'),
+          che('那，一碗面就好。'),
+          t('你煮了一锅清汤面，卧了两个蛋。她坐在饭桌边，一边吃一边打瞌睡，筷子差点掉了。'),
+          che('smile', '好吃。谢谢。')
+        ], { aff: { ache: 2 }, set: 'cooked_for_ache' })
+      ),
+      che('对了。你吃香菜吗？'),
+      choice(
+        opt('「吃，越多越好。」', [
+          che('……那我们不能一起吃火锅了。'),
+          t('她说这话的时候脸上没有表情，过了两秒，才很轻地笑了一下。')
+        ], { mem: { cilantro: 'yes' } }),
+        opt('「不吃，闻到就难受。」', [
+          che('smile', '好。同志。'),
+          t('她伸出拳头，你愣了一下，跟她碰了碰。')
+        ], { mem: { cilantro: 'no' }, aff: { ache: 1 } })
+      ),
+      che('我去睡了。下午四点以前，别敲我的门，除非着火。'),
+      che('着火了也先敲小满的。'),
+      show(),
+      t('她回房间以前，在冰箱上贴了一张新的便利贴。'),
+      note('ache', '冰箱第二层的豆浆是我的，你可以喝。'),
+    ]
+  },
+  {
+    id: 'd1-evening', day: 1, slot: 'dusk', title: '住户表',
+    bg: 'living', time: 'dusk',
+    steps: [
+      show('xiaoman'),
+      man('{name}！你回来啦！快过来，紧急任务。'),
+      t('客厅墙上贴着一张很大的纸，上面用彩铅画着四楼的平面图，每个房间里画了一个小人。'),
+      man('smile', '这是四楼住户表。阿澈姐、我、Nico，还有房东。房东是那只猫。'),
+      man('现在我要把你画上去。但是我得先知道，你希望大家叫你什么？'),
+      choice(
+        opt('「就叫名字吧。」', [
+          man('那太普通了！我给你起一个，你没得选。'),
+          man('smile', '因为你今天早上给阿澈姐煮了面……不对，你有没有煮？算了，你叫「新邻居」。暂时的。')
+        ], { mem: { nickname: '新邻居' } }),
+        opt('「你看着起吧。」', [
+          man('surprised', '真的？你完了，你把命运交给了我。'),
+          man('smile', '那就叫你「四号」！因为你是第四个人。猫不算。')
+        ], { mem: { nickname: '四号' }, aff: { xiaoman: 2 } }),
+        opt('「以前朋友叫我的外号……算了，太丢人了。」', [
+          man('surprised', '不行！你都说出口了！是什么！'),
+          man('……好吧，不逼你。那我就画个问号在你头上，等你哪天愿意告诉我。'),
+          t('她真的在你的小人头上画了一个问号。')
+        ], { mem: { nickname: '问号' }, aff: { xiaoman: 1 } })
+      ),
+      t('她低头画你。画到眼睛的时候，她停下来看了你很久，又擦掉重画。'),
+      man('人的眼睛最难画了。我画了四年还是画不好。'),
+      man('sad', '……我的毕业展只剩两个月了，主画还空着一块。'),
+      man('smile', '不说这个！吃饭了吗？我们点外卖吧，Nico 请客，他不知道。')
+    ]
+  },
+  {
+    id: 'd1-night', day: 1, slot: 'night', title: '天台上的电话',
+    bg: 'rooftop', time: 'night',
+    steps: [
+      t('晚上你上天台透气。晾衣绳上挂着几件衬衫，远处有一座亮着工程灯的桥。'),
+      show('nico'),
+      nico('……sim, mãe. Eu também. Tchau, tchau.'),
+      t('Nico 挂掉电话，回头看见你，有点不好意思。'),
+      nico('smile', '我妈妈。每天这个时候，她那边是中午。'),
+      nico('你也是从很远的地方来的吗？你为什么来这里？'),
+      choice(
+        opt('「来读书。」', [
+          nico('smile', '那我们一样！我们是……同学？不对。同学生。'),
+          nico('学习很辛苦。但是可以在天台看桥，我觉得值得。')
+        ], { mem: { reason: '读书' }, aff: { nico: 1 } }),
+        opt('「来工作。」', [
+          nico('surprised', '你已经是大人了！我还在当学生，我妈妈说我永远是小孩。'),
+        ], { mem: { reason: '工作' } }),
+        opt('「想离开原来的地方，换个地方生活。」', [
+          nico('……嗯。我懂。'),
+          nico('有时候不是因为这里好，是因为那里，太熟了，熟到看不见自己。'),
+          t('他说完，自己也有点惊讶，好像不知道这句中文是从哪里来的。')
+        ], { mem: { reason: '换个地方生活' }, aff: { nico: 2 } })
+      ),
+      t('他从口袋里掏出一个小本子，翻开，上面密密麻麻写着中文词，每个旁边都有葡萄牙语。'),
+      nico('smile', '这是我的宝贝。每天学一个新词。你今天教我一个吧？'),
+      choice(
+        opt('教他「室友」', [
+          nico('……这个小满已经教过了。她说如果我再说错，她就把我的蛋挞扔下楼。'),
+          nico('smile', '你很诚实。我喜欢。')
+        ]),
+        opt('教他「晚安」', [
+          nico('晚……安。'),
+          nico('smile', '比 boa noite 短。中文很节约。'),
+          t('他认真地写下来，在旁边画了一个月亮。')
+        ], { aff: { nico: 1 }, mem: { nicoWord: '晚安' } }),
+        opt('教他「天台」', [
+          nico('天台。天上的……台？'),
+          nico('smile', '那我们现在在天上。很好。'),
+        ], { aff: { nico: 1 }, mem: { nicoWord: '天台' } })
+      ),
+      nico('晚安，{name}。'),
+      t('你下楼的时候，看见阿澈的门缝里亮着灯。她已经出门上夜班了，灯是给猫留的。')
+    ]
+  },
+
+  // ───────────────────────── 第二天 ─────────────────────────
+  {
+    id: 'd2-morning', day: 2, slot: 'dawn', title: '第二张便利贴',
+    bg: 'kitchen', time: 'dawn',
+    steps: [
+      t('冰箱上多了一张便利贴，字比昨天多。'),
+      when({ flag: 'cooked_for_ache' },
+        [note('ache', '昨天的面很好吃。我今天八点回来，如果你还没出门，我带了包子。肉的。')],
+        [note('ache', '昨晚有点忙。我今天八点回来，带了包子，肉的，放在桌上。')]
+      ),
+      when({ memIs: ['cilantro', 'no'] },
+        [t('便利贴最下面有一行小字：「没放香菜。」')],
+        [t('便利贴最下面有一行小字：「你那份我让他们多放了香菜。」')]
+      ),
+      t('你拿起一支笔，想了想，在下面回了一句。'),
+      choice(
+        opt('「谢谢。路上小心。」', [], { aff: { ache: 1 } }),
+        opt('「辛苦了。今天也平安。」', [], { aff: { ache: 2 }, mem: { replyToAche: '今天也平安' } }),
+        opt('画一只猫', [], { aff: { ache: 1, xiaoman: 1 }, mem: { replyToAche: '一只猫' } })
+      ),
+      t('你出门的时候，那只猫正坐在冰箱顶上，看着这张越来越长的便利贴。')
+    ]
+  },
+  {
+    id: 'd2-bookshop', day: 2, slot: 'day', title: '半页',
+    bg: 'bookshop', time: 'day',
+    steps: [
+      show('laozhou'),
+      zhou('smile', '小家伙，来得正好。帮我把这一箱书上架，我请你喝茶。'),
+      t('书店里很暖，纸的味道混着茶香。房东睡在一摞旧杂志上，打着呼。'),
+      zhou('诗集放左边，小说放右边，菜谱放我这儿，我要先看。'),
+      t('你踮着脚把书往上放，碰掉了一张夹在书里的旧明信片。背面写着几行字，你还没看清，老周已经接过去了。'),
+      zhou('……这是旧的。谢谢。'),
+      t('他把明信片放进收银台后面的抽屉，锁上，钥匙挂回脖子上。整个过程很慢，很小心。'),
+      choice(
+        opt('什么也不问', [
+          zhou('smile', '你这孩子，懂事。'),
+          t('他给你倒了一杯茶，茶杯是热的，他先替你暖过。')
+        ], { aff: { laozhou: 2 }, set: 'didnt_ask_drawer' }),
+        opt('「是很重要的人寄来的吗？」', [
+          zhou('……是很重要的人。'),
+          zhou('不是寄来的，是没寄出去的。'),
+          zhou('smile', '好了，喝茶。书里都写着呢，人老了，抽屉就多了。')
+        ], { aff: { laozhou: 1 }, set: 'asked_drawer' })
+      ),
+      zhou('来，挑一本带走。借的，看完还我。'),
+      choice(
+        opt('一本旧诗集', [zhou('smile', '好眼光。第三十七页有我年轻时写的批注，别笑。')], { mem: { book: '旧诗集' }, aff: { laozhou: 1 } }),
+        opt('一本旅行记', [zhou('写的是一个人骑车绕着海岸走了一年。适合刚到新地方的人。')], { mem: { book: '旅行记' } }),
+        opt('一本家常菜谱', [zhou('smile', '哈！周六你来吃饭，我照着第十二页做给你看。')], { mem: { book: '家常菜谱' }, set: 'zhou_recipe' })
+      )
+    ]
+  },
+  {
+    id: 'd2-night', day: 2, slot: 'night', title: '猫胖了',
+    bg: 'kitchen', time: 'night',
+    steps: [
+      t('晚上十点，厨房里出现了一种奇怪的局面。'),
+      show('xiaoman', 'nico'),
+      man('surprised', 'Nico，你手里拿的是什么？'),
+      nico('……这个？是……给我自己的鱼。'),
+      man('你又不吃鱼！'),
+      nico('那你手里拿的是什么？'),
+      man('……猫条。给我自己的。'),
+      t('房东坐在饭桌中间，尾巴卷着，等着。'),
+      nico('等一下。你每天几点喂它？'),
+      man('晚上十点。你呢？'),
+      nico('早上八点和晚上十点半。'),
+      man('surprised', '……那它每天吃几顿？！'),
+      t('你想起今天下午，老周在书店门口也放了一小碟东西。'),
+      choice(
+        opt('「老周下午四点也喂它。」', [
+          man('surprised', '完蛋了。'),
+          nico('所以它不是胖，是……很幸福？'),
+        ], { aff: { nico: 1, xiaoman: 1 } }),
+        opt('悄悄把自己口袋里的小鱼干藏好', [
+          t('房东看了你一眼。它知道。'),
+          cat('喵。'),
+          man('……{name}，你口袋里是什么？')
+        ], { aff: { cat: 2 }, set: 'fed_cat' })
+      ),
+      man('smile', '好！从今天起，四楼成立「房东减肥委员会」。每人每天只能喂一次，写在冰箱上。'),
+      nico('委员会。这个词我要写下来。'),
+      t('第二天，冰箱上多了一张表，四个人的名字下面画着小鱼。阿澈那一栏，有人帮她填上了：「早上七点」。')
+    ]
+  },
+
+  // ───────────────────────── 第三天 ─────────────────────────
+  {
+    id: 'd3-morning', day: 3, slot: 'dawn', title: '雨',
+    bg: 'stairs', time: 'dawn', weather: 'rain',
+    steps: [
+      t('早上下起了大雨。你下楼买早饭，在门口遇见了刚到家的阿澈。她没带伞，头发全湿了。'),
+      show('ache'),
+      che('……早。'),
+      choice(
+        opt('把伞给她，自己冒雨去买早饭', [
+          che('surprised', '不用……'),
+          t('你已经跑出去了。回来的时候你也湿透了，手里提着两杯热豆浆。'),
+          che('smile', '……傻子。'),
+          t('她接过豆浆，把自己的围巾解下来，搭在你头上。')
+        ], { aff: { ache: 3 }, set: 'umbrella_for_ache' }),
+        opt('「我陪你上去，你先洗个热水澡。」', [
+          che('嗯。热水器要等三分钟。'),
+          che('smile', '这次我替你等。')
+        ], { aff: { ache: 2 } })
+      ),
+      t('楼道里很暗，三楼那盏灯还是没亮。她走在前面，脚步很轻，像怕吵醒谁。'),
+      che('昨天晚上来了一个小孩，发高烧。现在退了。'),
+      che('……就是想跟谁说一声。')
+    ]
+  },
+  {
+    id: 'd3-evening', day: 3, slot: 'dusk', title: 'Nico 的蛋挞',
+    bg: 'kitchen', time: 'dusk', weather: 'rain',
+    steps: [
+      show('nico'),
+      nico('smile', '{name}！你来得刚好。今天下雨，我妈妈说，下雨天要吃甜的。'),
+      t('烤箱里飘出一股……很难形容的味道。'),
+      nico('葡式蛋挞。我妈妈的配方。我第四次做。'),
+      t('他端出一盘颜色深浅不一的蛋挞，有一个塌了，有一个焦了，还有一个看起来非常完美。'),
+      choice(
+        opt('吃那个焦的', [
+          nico('surprised', '你选了最差的那个！为什么？'),
+          me('最好的那个留给你自己。'),
+          nico('……obrigado.'),
+          t('其实焦的那个，意外地不难吃。')
+        ], { aff: { nico: 2 } }),
+        opt('吃那个完美的', [
+          nico('smile', '那个是我妈妈的手法！我练了好久！'),
+          t('很好吃。真的很好吃。他看着你的表情，笑得像得了奖。')
+        ], { aff: { nico: 1 }, set: 'nico_tart_good' }),
+        opt('「我们一人一半，每个都尝一点。」', [
+          nico('smile', '这是……公平！中文怎么说？'),
+          me('「有福同享」。'),
+          nico('有福同享。那难吃也同享吗？'),
+          me('那叫「有难同当」。'),
+          t('他把两个词都写进了本子，在下面画了一个蛋挞。')
+        ], { aff: { nico: 2 }, mem: { nicoWord: '有福同享' } })
+      ),
+      show('nico', 'xiaoman'),
+      man('surprised', '什么味道……Nico 你又烤了？！'),
+      nico('小满，你来尝一个。'),
+      man('……'),
+      man('smile', '……比上次好吃。就一点点。'),
+      t('Nico 把这句话也记下来了。'),
+      t('房东蹲在门口闻了闻，扭头走了。')
+    ]
+  },
+  {
+    id: 'd3-night', day: 3, slot: 'night', title: '腿上的猫',
+    bg: 'living', time: 'night', weather: 'rain',
+    steps: [
+      t('雨下到深夜。客厅只开着一盏落地灯。今天阿澈轮休，她坐在沙发另一头看书。'),
+      t('房东从窗台跳下来，绕着你转了一圈，然后跳上你的腿，睡了。'),
+      show('ache'),
+      che('surprised', '……它从来不睡在别人腿上的。'),
+      che('只有下雨天会。而且只挑它认可的人。'),
+      t('你不敢动。她看着你僵硬的样子，笑出了声。这是你第一次听见她笑出声。'),
+      che('smile', '放松。它重，但不咬人。'),
+      t('窗外的雨声很密。你们很久没有说话，但是不尴尬。'),
+      che('你知道吗，我刚来四楼的时候，也是下雨天。'),
+      che('那时候老周还不老，小满还没来，这只猫还是一只小猫。'),
+      choice(
+        opt('「那时候你为什么搬来这里？」', [
+          che('……离医院近。'),
+          che('还有，这里的灯是暖的。我那时候需要一个灯是暖的地方。'),
+          t('她没有再说下去，你也没有再问。')
+        ], { aff: { ache: 2 }, set: 'ache_why_here' }),
+        opt('什么也不说，陪她听雨', [
+          t('她翻了一页书，又翻回来。'),
+          che('……谢谢你不说话。'),
+          che('smile', '我是说，这样很好。')
+        ], { aff: { ache: 3 } })
+      ),
+      t('十二点的时候，她起身去倒水，顺手给你也倒了一杯，放在你够得着的地方。'),
+      t('房东在你腿上翻了个身，继续睡。'),
+      t('这是你在四楼的第三天。你突然发现，你已经开始记得每个人回家的时间了。')
+    ]
+  }
+];
+
+return { default: __default };
+});
+__def("story/ch1/d04-07.js", () => {
+const { che, man, zhou, nico, cat, me, t, note, bg, show, choice, opt, when } = __req("story/lines.js");
+const __default = [
+  // ───────────────────────── 第四天 ─────────────────────────
+  {
+    id: 'd4-morning', day: 4, slot: 'dawn', title: '灶上的砂锅',
+    bg: 'kitchen', time: 'dawn',
+    steps: [
+      t('早上的厨房有一股香味。灶台上那口砂锅冒着热气，锅盖上压着一张纸条，是毛笔字。'),
+      note('laozhou', '排骨莲藕汤。给阿澈留的，她下夜班要喝热的。\n你也盛一碗，别客气。'),
+      t('冰箱上那张「房东减肥委员会」的表格，阿澈那一栏多了一行字。'),
+      note('ache', '房东今天早上已经吃过了。它会装作没吃。别信它。'),
+      t('房东坐在冰箱前，用一种从来没吃过饭的眼神看着你。'),
+      choice(
+        opt('坚守委员会的纪律', [
+          cat('……喵。'),
+          t('它看了你很久，最后放弃了，跳上窗台去咬阿澈的绿萝。')
+        ], { aff: { ache: 1 } }),
+        opt('偷偷给它一小块排骨', [
+          cat('喵！'),
+          t('门锁响了。阿澈站在门口，看着你，看着猫，看着那块排骨。'),
+          show('ache'),
+          che('……'),
+          che('smile', '我什么都没看见。'),
+          che('汤给我盛一碗。多盛点藕。')
+        ], { aff: { cat: 2, ache: 1 }, set: 'caught_feeding' })
+      ),
+      when({ not: { flag: 'caught_feeding' } }, [
+        t('七点十分，阿澈回来了。她看见砂锅，愣了一下，站在灶台前很久。'),
+        show('ache'),
+        che('……老周又这样。'),
+        che('smile', '他总说是顺手做的。哪有人顺手炖三个小时。')
+      ]),
+      t('你们一人一碗汤，坐在饭桌两边。她喝得很慢。'),
+      che('今天夜班有个老爷爷，一直问护士站几点了。我陪他看了半个小时的钟。'),
+      che('……就这些。我去睡了。')
+    ]
+  },
+  {
+    id: 'd4-night', day: 4, slot: 'night', title: 'saudade',
+    bg: 'rooftop', time: 'night',
+    steps: [
+      t('天台上风很大。Nico 坐在塑料椅子上，手机屏幕是黑的。'),
+      show('nico'),
+      nico('smile', '{name}。坐。今天我想教你一个词，反过来。'),
+      nico('saudade。葡萄牙语。'),
+      nico('它的意思是……想念一个东西。但是那个东西可能已经不在了，也可能从来没有过。'),
+      nico('我查了字典，中文是「思念」「怀念」「乡愁」。都不对。都差一点点。'),
+      nico('你想念家里的什么？'),
+      choice(
+        opt('「我妈做的饭。」', [
+          nico('smile', '我也是！我妈妈做的 bacalhau，鳕鱼。我做不出来。我试了，像橡皮。'),
+          nico('所以我做蛋挞。蛋挞失败了，也比较不难过。')
+        ], { mem: { miss: '妈妈做的饭' }, aff: { nico: 1 } }),
+        opt('「以前的朋友。」', [
+          nico('……嗯。朋友会变。不是他们变坏了，是你们的时间不一样了。'),
+          nico('我出发那天，我最好的朋友没来送我。他说他怕哭。'),
+          nico('smile', '他是个大傻瓜。我也是。')
+        ], { mem: { miss: '以前的朋友' }, aff: { nico: 2 } }),
+        opt('「家里那张床。」', [
+          nico('surprised', '床！对！这里的床太硬了。'),
+          nico('smile', '我妈妈说，换了床就能睡好，说明你已经长大了。我还没长大。')
+        ], { mem: { miss: '家里那张床' }, aff: { nico: 1 } }),
+        opt('「说不上来。」', [
+          nico('……对。就是这个。'),
+          nico('说不上来的那个东西，就是 saudade。'),
+          t('他在本子上写了很久，你看见他写的是「说不上来」，旁边画了一个小箭头，指向 saudade。')
+        ], { mem: { miss: '说不上来的东西' }, aff: { nico: 3 }, set: 'saudade_understood' })
+      ),
+      t('远处那座桥的工程灯一闪一闪。'),
+      nico('今天我妈妈没有打电话来。她说今天忙。'),
+      nico('smile', '没关系。我来天台，就当打过了。'),
+      t('你们坐到风停了才下楼。')
+    ]
+  },
+
+  // ───────────────────────── 第五天 ─────────────────────────
+  {
+    id: 'd5-evening', day: 5, slot: 'dusk', title: '关着的门',
+    bg: 'living', time: 'dusk',
+    steps: [
+      show('xiaoman'),
+      man('{name}，你有空吗？就……五分钟。帮我看几张画。'),
+      t('她抱出来一大叠画，摊在客厅地板上。有水彩，有油画，有铅笔速写。'),
+      man('smile', '这是大一的，那时候画得好烂。这是大二，开始有点样子了。这张是写生，在河边，冻死了。'),
+      t('你一张一张看过去。画里有街道、有楼梯、有厨房、有一个空荡荡的院子。'),
+      t('你发现一件事：每一张画里，都有一扇门。每一扇门都是关着的。'),
+      choice(
+        opt('「每一张都有一扇门，而且都关着。」', [
+          man('surprised', '……'),
+          man('你是第一个看出来的人。我的老师都没看出来。'),
+          man('sad', '……那是我小时候住的房子的门。我搬走以后，就再也没进去过。'),
+          man('那个房子现在没人住了。我爸妈离婚以后，谁都不要它。'),
+          t('她说得很快，好像怕自己说慢了就说不下去。')
+        ], { aff: { xiaoman: 3 }, set: 'saw_doors' }),
+        opt('「这张河边的最好。」', [
+          man('smile', '真的？我也最喜欢这张！冻得手都在抖，可是画出来的水是活的。'),
+          t('那张河边的画里，远处也有一扇门。你没有说。')
+        ], { aff: { xiaoman: 1 } }),
+        opt('「你画得比你说的好多了。」', [
+          man('……别安慰我。'),
+          man('smile', '不过谢谢。真的。')
+        ], { aff: { xiaoman: 2 } })
+      ),
+      man('毕业展的那幅，中间空着的那一块，本来要画一扇门。'),
+      man('sad', '我画了十几次，每次都画成关着的。'),
+      man('smile', '好啦！不说了！今天谢谢你，我请你喝橘子汽水。')
+    ]
+  },
+  {
+    id: 'd5-night', day: 5, slot: 'night', title: '凌晨一点的泡面',
+    bg: 'kitchen', time: 'night',
+    steps: [
+      t('凌晨一点，你下楼找水喝，厨房的灯亮着。'),
+      show('xiaoman', 'ache'),
+      man('嘘！阿澈姐今天轮休，我们在偷吃泡面。'),
+      che('不是偷吃。是光明正大地吃。'),
+      man('smile', '{name}要不要一起？有三包，一包是辣的。'),
+      choice(
+        opt('「要辣的。」', [
+          man('surprised', '勇士！'),
+          che('smile', '那包是 Nico 买的，他说是「微辣」。'),
+          t('不是微辣。你咳了三分钟，阿澈一边笑一边给你倒水。')
+        ], { aff: { ache: 1, xiaoman: 1 }, mem: { spicy: 'yes' } }),
+        opt('「不辣的就好。」', [
+          che('smart。'),
+          man('阿澈姐你刚才是不是说了英文！'),
+          che('……没有。')
+        ], { mem: { spicy: 'no' }, aff: { ache: 1 } })
+      ),
+      t('小满给阿澈泡了一杯茶。她泡茶的动作，和阿澈一模一样：先烫杯，再放茶叶，最后等三十秒。'),
+      che('surprised', '……你什么时候学的？'),
+      man('smile', '偷看的！我偷看了一年！'),
+      che('……'),
+      che('smile', '泡得不错。'),
+      t('小满高兴得差点把泡面打翻。'),
+      when({ flag: 'saw_doors' }, [
+        man('阿澈姐，我今天给{name}看了我的画。'),
+        che('……那些门？'),
+        man('嗯。'),
+        che('smile', '那就好。'),
+        t('你不知道「那就好」是什么意思。但是小满好像知道。')
+      ])
+    ]
+  },
+
+  // ───────────────────────── 第六天 ─────────────────────────
+  {
+    id: 'd6-market', day: 6, slot: 'day', title: '周六的菜',
+    bg: 'bookshop', time: 'day',
+    steps: [
+      show('laozhou'),
+      zhou('smile', '今天周六。小家伙，陪我去买菜。'),
+      t('书店门口挂了「下午营业」的牌子。老周拎着一个旧布袋，走得很慢，每个摊主都跟他打招呼。'),
+      zhou('今晚全楼上来吃饭。这是规矩，你第一次来，你点一个菜。'),
+      when({ flag: 'zhou_recipe' },
+        [zhou('smile', '你借的那本菜谱，第十二页，红烧肉。我说过要做给你看的。'), { mem: { dish: '红烧肉' } }],
+        [choice(
+          opt('「红烧肉。」', [zhou('smile', '好。肥一点的，炖烂。')], { mem: { dish: '红烧肉' } }),
+          opt('「番茄炒蛋。」', [zhou('哈，你倒是好养活。我给你做个不一样的番茄炒蛋。')], { mem: { dish: '番茄炒蛋' } }),
+          opt('「我家乡的菜……可能做不了。」', [
+            zhou('你说说看。'),
+            t('你描述了一道小时候的菜。他听得很认真，点了点头。'),
+            zhou('smile', '我试试。不像的话，你别告诉我。')
+          ], { mem: { dish: '家乡菜' }, aff: { laozhou: 2 } })
+        )]
+      ),
+      t('他在一个水果摊前停下来，拿起一个橘子，又放下。'),
+      zhou('……我女儿小时候也爱吃这种橘子。'),
+      t('他说完就往前走了。你愣了一下。那是你第一次听他提起家人。'),
+      zhou('走吧，还要买鱼。Nico 不吃鱼，可是猫吃。')
+    ]
+  },
+  {
+    id: 'd6-dinner', day: 6, slot: 'night', title: '多出来的那副碗筷',
+    bg: 'living', time: 'night',
+    steps: [
+      t('晚上七点，四楼的折叠饭桌被拉开到最大。老周端上来六个菜，砂锅放在中间。'),
+      show('laozhou', 'ache', 'xiaoman', 'nico'),
+      man('smile', '开饭啦！阿澈姐今天居然不用上班！'),
+      che('换了班。'),
+      nico('我带了蛋挞！这次是第五次！'),
+      man('……先吃饭。'),
+      when({ memIs: ['dish', '家乡菜'] },
+        [t('桌上有一道菜，是你描述的那道。味道不太一样，但是你吃第一口的时候，眼眶有一点热。'), zhou('smile', '像吗？'), me('像。'), t('其实不太像。但是你说的是真话。')],
+        [t('你点的那道菜，老周放在了你面前。')]
+      ),
+      t('你数了数碗筷。五个人，桌上摆了六副。'),
+      t('没有人说什么。好像大家都知道，又好像大家都约好了不问。'),
+      zhou('来，吃饭。今天多了一个人，我们四楼又热闹了。'),
+      che('你坐哪儿？'),
+      choice(
+        opt('坐在阿澈旁边', [
+          che('smile', '……嗯。'),
+          t('她默默把那盘香菜拌的凉菜推到了离你远一点的地方。'),
+        ], { aff: { ache: 2 } }),
+        opt('坐在小满旁边', [
+          man('smile', '耶！你坐这儿，我们组成「不吃苦瓜联盟」。'),
+        ], { aff: { xiaoman: 2 } }),
+        opt('坐在 Nico 旁边', [
+          nico('smile', '好！你可以帮我翻译他们说的笑话。'),
+        ], { aff: { nico: 2 } }),
+        opt('坐在老周旁边', [
+          zhou('smile', '好，好。我给你夹菜，你不许剩。'),
+        ], { aff: { laozhou: 2 } })
+      ),
+      t('饭吃到一半，Nico 举起杯子，杯子里是橘子汽水。'),
+      nico('我想说一句中文。我练习了。'),
+      nico('smile', '……「有你们，真好」。'),
+      man('surprised', '……你犯规！你怎么突然说这个！'),
+      t('小满眼眶红了，假装是被辣的。阿澈低头笑。老周没说话，只是又给每个人盛了一碗汤。'),
+      t('饭局散了以后，你帮老周收碗。那副多出来的碗筷，干干净净，他单独收好了。'),
+      choice(
+        opt('「周叔，那一副是给谁的？」', [
+          zhou('……'),
+          zhou('给一个可能会来的人。'),
+          zhou('smile', '每个周六都摆。摆了很多年了。来不来，是她的事。摆不摆，是我的事。'),
+          t('他把那副碗筷擦了又擦，放进柜子最里面。')
+        ], { aff: { laozhou: 1 }, set: 'noticed_bowl' }),
+        opt('什么也不问，帮他擦干', [
+          zhou('smile', '你这孩子，好。'),
+          t('他把那副碗筷放进柜子最里面。手在柜门上停了一会儿。')
+        ], { aff: { laozhou: 2 } })
+      )
+    ]
+  },
+
+  // ───────────────────────── 第七天 ─────────────────────────
+  {
+    id: 'd7-afternoon', day: 7, slot: 'day', title: '周日下午',
+    bg: 'living', time: 'day',
+    steps: [
+      t('周日下午。客厅很安静，阳光照在地板上，房东睡在光斑里。'),
+      t('Nico 坐在沙发上，什么也没干，就是坐着。'),
+      show('nico'),
+      nico('sad', '……我不喜欢周日下午。'),
+      nico('在里斯本，周日下午是全家吃饭的时间。很长很长的一顿饭。我奶奶会睡着，我爸爸会讲同一个笑话。'),
+      nico('这里的周日下午，太安静了。'),
+      choice(
+        opt('「那我们也吃一顿很长的饭吧。」', [
+          nico('surprised', '……现在？'),
+          me('现在。我去煮面，你烤蛋挞。'),
+          nico('smile', '好！很长很长的那种！'),
+          t('那顿饭从下午三点吃到了五点。面坨了，蛋挞焦了，房东偷走了一块鸡蛋。Nico 笑得停不下来。')
+        ], { aff: { nico: 3 }, set: 'long_lunch' }),
+        opt('「我陪你坐一会儿。」', [
+          nico('……obrigado。'),
+          t('你们坐在沙发两头，谁也没说话。阳光一点一点往墙上爬。'),
+          nico('smile', '这样也很好。安静，可是不是一个人。')
+        ], { aff: { nico: 2 } })
+      )
+    ]
+  },
+  {
+    id: 'd7-night', day: 7, slot: 'night', title: '没有打来的电话',
+    bg: 'rooftop', time: 'night',
+    steps: [
+      t('晚上十一点，你上天台收衣服。Nico 还坐在那把蓝色的塑料椅子上。'),
+      show('nico'),
+      nico('……今天我妈妈也没打电话。第三天了。'),
+      nico('sad', '她发消息说没事。可是我妈妈从来不说没事，她只说「吃了吗」。'),
+      t('你想了想，下楼拿了一样东西上来。'),
+      choice(
+        opt('一杯热茶', [
+          nico('……谢谢。中国人有事的时候，都喝热水，对吗？'),
+          me('差不多。'),
+          nico('smile', '那我现在是中国人了。')
+        ], { aff: { nico: 2 } }),
+        opt('一罐小满的橘子汽水', [
+          nico('surprised', '你偷了小满的汽水！'),
+          me('明天再买一罐还她。'),
+          nico('smile', '那我们是共犯。共犯，这个词我知道。')
+        ], { aff: { nico: 2, xiaoman: -1 }, set: 'stole_soda' }),
+        opt('你的外套', [
+          t('你把外套披在他肩上。他愣了一下，没有推辞。'),
+          nico('……我妈妈也会这样做。'),
+          nico('smile', '谢谢你，{name}。')
+        ], { aff: { nico: 3 } })
+      ),
+      nico('我的交换学期，还有四个月就结束了。'),
+      nico('我的导师问我，要不要留下来，读硕士。'),
+      nico('我不知道。留下来，就离家更远。回去，就离这里更远。'),
+      when({ flag: 'saudade_understood' },
+        [nico('……不管我选哪个，以后都会有 saudade。对吧？'), t('你点了点头。他笑了，笑得有点难看。')],
+        [t('他没有等你回答，好像只是需要把这句话说出来。')]
+      ),
+      t('十二点零五分，他的手机终于响了。屏幕上是「Mãe」。'),
+      nico('surprised', '……！'),
+      t('他跳起来，接通，背对着你，声音一下子变得很小很软。'),
+      t('你悄悄下楼了。楼梯上，你听见他在笑。')
+    ]
+  }
+];
+
+return { default: __default };
+});
+__def("story/ch1/d08-11.js", () => {
+const { che, man, zhou, nico, cat, me, t, note, bg, show, choice, opt, when } = __req("story/lines.js");
+const __default = [
+  // ───────────────────────── 第八天 ─────────────────────────
+  {
+    id: 'd8-morning', day: 8, slot: 'dawn', title: '没有回房间的早上',
+    bg: 'living', time: 'dawn',
+    steps: [
+      t('早上六点半，你起来喝水，看见客厅里有人。'),
+      t('阿澈坐在沙发上，外套没脱，包还挎在肩上。窗外的天刚刚变白。'),
+      show('ache'),
+      che('……早。'),
+      t('她的声音很平，平得不像她。'),
+      choice(
+        opt('坐到她旁边，什么都不问', [
+          t('你在沙发另一头坐下。过了很久，她开口了。')
+        ], { aff: { ache: 2 } }),
+        opt('去给她泡一杯热茶', [
+          t('你泡了一杯茶，放在她手边。她用两只手捧着，没有喝。'),
+          che('……谢谢。')
+        ], { aff: { ache: 2 } }),
+        opt('「怎么了？」', [
+          che('……没事。'),
+          t('她说完这两个字，自己也觉得不像真的，低下了头。')
+        ], { aff: { ache: 1 } })
+      ),
+      when({ seen: 'd4-morning' },
+        [che('sad', '那个问几点的老爷爷。昨天晚上，走了。')],
+        [che('sad', '有个老爷爷，住了一个星期。昨天晚上，走了。')]
+      ),
+      che('我做了所有该做的。抢救做了四十分钟。都对。'),
+      che('可是他走之前一直问几点了，我那时候在忙别的床，没有回答他。'),
+      che('……就差一句话。'),
+      t('房东从走廊里走出来，跳上沙发，在你们两个人中间趴下。'),
+      choice(
+        opt('「你回答了他很多次。第四天，你陪他看了半个小时的钟。」', [
+          che('surprised', '……你还记得。'),
+          che('sad', '……嗯。'),
+          t('她把脸埋进围巾里。你看见她的肩膀在抖，没有发出声音。')
+        ], { if: { seen: 'd4-morning' }, aff: { ache: 4 }, set: 'ache_cried' }),
+        opt('「你已经很好了。」', [
+          che('……大家都这么说。'),
+          che('smile', '不过从你嘴里说出来，好像好一点。')
+        ], { aff: { ache: 2 } }),
+        opt('把房东往她那边推一推', [
+          cat('喵。'),
+          t('房东不情愿地挪了挪，最后把头靠在了阿澈的腿上。'),
+          che('smile', '……它今天很懂事。'),
+          t('她摸着猫，眼泪一滴一滴落在猫背上。房东没有躲。')
+        ], { aff: { ache: 3, cat: 1 }, set: 'ache_cried' })
+      ),
+      che('……我最近在想，要不要换个地方。社区医院，白天上班，不用一直送人走。'),
+      che('还没跟任何人说过。小满会哭的。'),
+      che('smile', '你也别说。'),
+      t('她站起来，终于把包放下了。'),
+      che('我去睡了。……谢谢你在这儿。')
+    ]
+  },
+  {
+    id: 'd8-night', day: 8, slot: 'night', title: '很长的便利贴',
+    bg: 'kitchen', time: 'night',
+    steps: [
+      t('晚上你回来的时候，冰箱上贴着一张便利贴。不是一张，是三张，接在一起。'),
+      note('ache', '今天睡了很久。醒来的时候，房东在我门口。\n我不知道它是来守我，还是来等饭。大概是等饭。\n早上的事，谢谢。我不太会说话。\n写出来比较容易。'),
+      t('最下面还有一行很小的字。'),
+      when({ memIs: ['cilantro', 'no'] },
+        [note('ache', '冰箱里有我买的米线，没有香菜。你的那份。')],
+        [note('ache', '冰箱里有我买的米线，香菜单独装了一盒。你的那份。')]
+      ),
+      t('你拿起笔，在下面回了一句。'),
+      choice(
+        opt('「不用谢。我在的。」', [], { aff: { ache: 2 }, mem: { replyToAche: '我在的' } }),
+        opt('「写出来，我都会看。」', [], { aff: { ache: 2 }, mem: { replyToAche: '写出来我都会看' } }),
+        opt('画一个钟，指针停在早上六点半', [], { aff: { ache: 3 }, mem: { replyToAche: '一个停在六点半的钟' } })
+      ),
+      t('第二天早上，你那张便利贴不见了。阿澈的门上，多了一张一模一样的。')
+    ]
+  },
+
+  // ───────────────────────── 第九天 ─────────────────────────
+  {
+    id: 'd9-bookshop', day: 9, slot: 'day', title: '抽屉',
+    bg: 'bookshop', time: 'day',
+    steps: [
+      t('下午你去书店还书。店里没人，收银台后面的电话响了很久，老周坐在那里，没有接。'),
+      show('laozhou'),
+      zhou('……你来啦。'),
+      t('电话停了。他像是松了一口气，又像是更难受了。'),
+      when({ mem: 'book' }, [
+        zhou(st => `那本${st.mem.book}，看完了？`),
+        choice(
+          opt('「看完了，很喜欢。」', [zhou('smile', '喜欢就再留一个礼拜。好书要看两遍。')], { aff: { laozhou: 1 } }),
+          opt('「还没看完，太慢了，我舍不得看快。」', [zhou('smile', '哈！这句话我年轻时也说过。')], { aff: { laozhou: 2 } })
+        )
+      ]),
+      zhou('小家伙，帮我个忙。'),
+      t('他从脖子上取下钥匙，打开了那个抽屉。里面是一大叠信封，每一个都写好了地址，贴好了邮票，没有寄出去。'),
+      zhou('我女儿。十二年前去了国外。走之前，我们吵了一架。'),
+      zhou('吵什么，现在都想不起来了。只记得我说了一句很难听的话。'),
+      zhou('sad', '后来每年她生日，我都写一封信。写完了，不敢寄。'),
+      when({ flag: 'noticed_bowl' }, [zhou('那副碗筷，你上次问过。就是给她的。')]),
+      zhou('刚才那个电话，是国外的号码。我不敢接。'),
+      choice(
+        opt('「我陪你寄一封吧，就最新的那一封。」', [
+          zhou('……'),
+          zhou('smile', '你这孩子。'),
+          t('你们一起走到街口的邮筒。他把信举在投信口前面，停了很久。'),
+          t('信掉进去的声音，很轻。'),
+          zhou('smile', '……好了。寄出去了。剩下的，交给邮局。')
+        ], { aff: { laozhou: 4 }, set: 'letter_sent' }),
+        opt('「下次电话响，你接一下试试？」', [
+          zhou('……我试试。'),
+          zhou('smile', '你说得对。不接，就永远不知道。')
+        ], { aff: { laozhou: 2 }, set: 'will_answer' }),
+        opt('什么也不说，帮他把抽屉锁好', [
+          zhou('smile', '……谢谢你听我说。说出来，就轻一点了。')
+        ], { aff: { laozhou: 2 } })
+      ),
+      t('回去的时候，房东跟在你们后面，一直跟到四楼。')
+    ]
+  },
+  {
+    id: 'd9-dusk', day: 9, slot: 'dusk', title: '斗嘴',
+    bg: 'living', time: 'dusk',
+    steps: [
+      show('xiaoman', 'nico'),
+      man('Nico！你又把「加油」说成「加醋」了！'),
+      nico('我是故意的！小满需要醋，因为小满很酸！'),
+      man('surprised', '……谁教你的！'),
+      nico('smile', '{name}教的。'),
+      choice(
+        opt('「我没有。」', [
+          man('哼，我信你。'),
+          nico('……你出卖我。'),
+        ], { aff: { xiaoman: 1 } }),
+        opt('「是我教的。」', [
+          man('你们两个是一伙的！'),
+          nico('smile', '一伙！这个词我也知道！'),
+        ], { aff: { nico: 1 } })
+      ),
+      t('小满嘴上不饶人，可是你注意到她今天特别吵，吵得有点用力。'),
+      t('Nico 也注意到了。等小满回房间以后，他小声跟你说：'),
+      nico('她的毕业展，下礼拜一要交初稿。她的画，中间还是空的。'),
+      nico('我偷偷买了她毕业展的票。你要不要一张？'),
+      choice(
+        opt('「要。」', [nico('smile', '好。那天我们一起去。不要告诉她，她会说我们很烦。')], { set: 'have_ticket', aff: { nico: 1, xiaoman: 1 } }),
+        opt('「她会想让我们去吗？」', [
+          nico('……会的。她嘴上会说不要来。'),
+          nico('smile', '她说「不要来」的时候，意思是「一定要来」。中文很难。'),
+          t('你还是收下了那张票。')
+        ], { set: 'have_ticket', aff: { nico: 2 } })
+      )
+    ]
+  },
+
+  // ───────────────────────── 第十天 ─────────────────────────
+  {
+    id: 'd10-evening', day: 10, slot: 'dusk', title: '空白的那一块',
+    bg: 'living', time: 'dusk',
+    steps: [
+      t('你回来的时候，客厅地上摊着一幅很大的画布。小满坐在画布旁边，抱着膝盖。'),
+      show('xiaoman'),
+      man('sad', '……我不交了。'),
+      man('我跟老师说，我退出毕业展。反正我画不出来。'),
+      t('画布上是一条长长的走廊，两边是很多扇窗户，光从窗户里照进来。走廊尽头，是一块空白。'),
+      man('sad', '那里应该是门。可是我每次画，都画成关着的。我不想画一扇关着的门放在毕业展上。'),
+      man('那等于告诉所有人，我还是那个站在门外面的小孩。'),
+      choice(
+        opt('「那就画一扇开着一条缝的门。」', [
+          man('……开着一条缝？'),
+          me('不用全开。开一条缝，就能看见里面有光。'),
+          man('surprised', '……'),
+        ], { aff: { xiaoman: 3 }, set: 'door_ajar' }),
+        opt('「门后面不一定是旧房子。也可以是现在的四楼。」', [
+          man('……四楼？'),
+          me('门打开，里面是客厅，沙发，住户表。还有我们。'),
+          man('surprised', '……'),
+        ], { aff: { xiaoman: 3 }, set: 'door_fourth_floor' }),
+        opt('坐下来，陪她看那块空白', [
+          t('你们并排坐着，看着那块空白，很久。'),
+          man('……谢谢你没有劝我。所有人都在劝我。'),
+        ], { aff: { xiaoman: 2 } })
+      ),
+      t('门开了。阿澈提早下班回来了，手里拎着一袋橘子。'),
+      show('xiaoman', 'ache'),
+      che('……怎么都坐在地上。'),
+      man('sad', '阿澈姐，我不想交了。'),
+      che('嗯。'),
+      che('那就不交。'),
+      man('surprised', '……你不劝我？'),
+      che('smile', '你想画的时候，自然会画。不想画，谁劝都没用。'),
+      che('不过，橘子是买给你的。吃了再决定。'),
+      t('楼梯上传来脚步声。老周端着一锅汤上来了，后面跟着 Nico，Nico 手里拿着……又一盘蛋挞。'),
+      show('xiaoman', 'ache', 'laozhou', 'nico'),
+      zhou('smile', '听说四楼有人不高兴。汤来了。'),
+      nico('蛋挞也来了！第六次！'),
+      man('……你们……'),
+      t('小满哭了。这次她没有假装是辣的。')
+    ]
+  },
+  {
+    id: 'd10-night', day: 10, slot: 'night', title: '凌晨三点的灯',
+    bg: 'myroom', time: 'night',
+    steps: [
+      t('凌晨三点，你醒了一次。隔壁小满的房间还亮着灯，音乐开得很小。'),
+      t('门缝里飘出来松节油的味道。'),
+      t('你没有敲门。你在门口放了一杯热牛奶，和一张便利贴。'),
+      choice(
+        opt('写：「慢慢画。」', [], { aff: { xiaoman: 1 } }),
+        opt('写：「我们都在门这边。」', [], { aff: { xiaoman: 2 }, mem: { noteToMan: '我们都在门这边' } }),
+        opt('画一扇开着的门', [], { aff: { xiaoman: 2 }, mem: { noteToMan: '一扇开着的门' } })
+      ),
+      t('早上你起来的时候，杯子洗干净了，放在你门口。杯子底下压着一张纸，是一幅很小的速写：'),
+      t('一扇门，开着一条缝，门缝里有光。'),
+      when({ flag: 'door_fourth_floor' }, [t('门缝里，隐约能看见一张沙发，和一只猫。')])
+    ]
+  },
+
+  // ───────────────────────── 第十一天 ─────────────────────────
+  {
+    id: 'd11-blackout', day: 11, slot: 'night', title: '停电',
+    bg: 'living', time: 'night', weather: 'rain',
+    steps: [
+      t('晚上九点，又下雨了。整栋楼突然一黑。'),
+      show('xiaoman'),
+      man('surprised', '啊啊啊停电了！我的画！没有保存！'),
+      t('……然后她想起来，画是画在画布上的，不用保存。'),
+      t('Nico 找到了蜡烛，老周从楼下摸上来，手里拿着一个手电筒，阿澈今天轮休。五个人和一只猫，挤在客厅里。'),
+      show('xiaoman', 'nico', 'laozhou', 'ache'),
+      nico('smile', '在我们那里，停电的时候，大家讲故事。'),
+      man('好！轮流讲！讲一件小时候的事，不许讲大道理。'),
+      zhou('smile', '我先来。我小时候偷过邻居家的枣，被狗追了两条街。那条狗后来成了我最好的朋友。'),
+      che('……我小时候想当兽医。后来发现，人比动物难治。'),
+      man('我小时候在家里墙上画画，被我妈打。现在我靠这个毕业。……如果能毕业的话。'),
+      nico('smile', '我小时候以为中国在月亮上。所以我想来。'),
+      t('大家都笑了。然后所有人都看向你。'),
+      choice(
+        opt(st => (st.mem.miss === '妈妈做的饭' ? '讲妈妈第一次教你做饭的事' : '讲小时候的一顿饭'), [
+          t('你讲了很久。讲到一半，你发现自己在笑，眼睛却是湿的。'),
+          zhou('smile', '……好故事。下个周六，你教我做。')
+        ], { aff: { laozhou: 2 } }),
+        opt(st => (st.mem.miss === '以前的朋友' ? '讲一个已经很久没联系的朋友' : '讲小时候最好的朋友'), [
+          t('你讲了你们一起逃课去河边的那个下午。'),
+          nico('……你应该给他打个电话。'),
+          me('……也许吧。'),
+          che('smile', '会的。'),
+        ], { aff: { nico: 2, ache: 1 } }),
+        opt('讲你为什么会来这座城市', [
+          t(st => `你讲了你为什么来这里：${st.mem.reason || '一些说不清的原因'}。你从来没有对谁讲得这么完整过。`),
+          man('……那你来对了。'),
+          man('smile', '因为你来了，四楼才满了。')
+        ], { aff: { xiaoman: 2 }, set: 'told_why' })
+      ),
+      t('蜡烛快烧完的时候，房东从你的腿上跳到了阿澈的腿上，又跳到了老周的腿上，最后睡在了所有人中间。'),
+      t('十一点，灯亮了。没有人欢呼。大家好像都有点舍不得。'),
+      nico('smile', '……下次停电，我们还讲。'),
+      che('嗯。')
+    ]
+  }
+];
+
+return { default: __default };
+});
+__def("story/ch1/d12-14.js", () => {
+const { che, man, zhou, nico, cat, me, t, note, bg, show, choice, opt, when } = __req("story/lines.js");
+// Who you have grown closest to, for the ending. Ties go to the earlier name.
+const CLOSEST = ['ache', 'xiaoman', 'laozhou', 'nico'];
+function closest(state) {
+  return CLOSEST.reduce((best, id) => ((state.aff[id] ?? 0) > (state.aff[best] ?? 0) ? id : best), CLOSEST[0]);
+}
+
+const __default = [
+  // ───────────────────────── 第十二天 ─────────────────────────
+  {
+    id: 'd12-morning', day: 12, slot: 'dawn', title: '一整面冰箱',
+    bg: 'kitchen', time: 'dawn',
+    steps: [
+      t('早上你走进厨房，愣住了。'),
+      t('冰箱门上，原来那些小满画的小人都被挪到了侧面。正中间贴着一排便利贴，一张接一张，从冰箱门顶一直贴到把手。'),
+      note('ache', '我想了一个星期，决定了。\n下个月开始，我去社区医院。白天上班。\n不是因为急诊不好。是因为我想晚上能在家，和你们一起吃饭。'),
+      note('ache', '我第一次搬来四楼，是因为这里的灯是暖的。\n现在我知道了，灯是暖的，是因为有人在。'),
+      note('ache', '小满我会自己告诉她。她肯定会哭。\n老周会说「好」。Nico 会问社区是什么意思。\n你是第一个知道的。'),
+      when({ mem: 'replyToAche' }, [
+        note('ache', '你写给我的每一张，我都留着。'),
+      ]),
+      t('你站在冰箱前面，看了很久。然后你去找了一沓新的便利贴。'),
+      choice(
+        opt('写：「恭喜你。以后晚饭，我做。」', [], { aff: { ache: 3 }, mem: { finalNote: '以后晚饭，我做' } }),
+        opt('写：「白天见。」', [], { aff: { ache: 3 }, mem: { finalNote: '白天见' } }),
+        opt('写了很长很长，贴了五张', [
+          t('你写了你来四楼以后的每一天。写到最后，你自己都笑了：原来你也是会写这么多字的人。')
+        ], { aff: { ache: 4 }, mem: { finalNote: '五张便利贴' } })
+      ),
+      t('那天下午，你听见小满在阿澈的房间里大哭，然后大笑，然后又哭了。')
+    ]
+  },
+  {
+    id: 'd12-evening', day: 12, slot: 'dusk', title: '门开了一条缝',
+    bg: 'living', time: 'dusk',
+    steps: [
+      show('xiaoman'),
+      man('{name}！闭上眼睛！不许偷看！'),
+      t('她拉着你走到客厅中间，然后掀开了一块布。'),
+      man('smile', '……好了。可以看了。'),
+      t('那幅长长的走廊，尽头不再是空白了。'),
+      when({ flag: 'door_fourth_floor' },
+        [t('尽头是一扇门，开着一条缝。门缝里是四楼的客厅：旧沙发、折叠饭桌、墙上的住户表，还有一只胖了的猫。')],
+        [t('尽头是一扇门，开着一条缝。门缝里有一道很暖的光，照在走廊的地板上。')]
+      ),
+      man('我没有画开。开一条缝，就够了。'),
+      man('我昨天去了那个旧房子。在门口站了半个小时。没进去。'),
+      man('smile', '但是我发现，我不用进去了。我已经有地方回了。'),
+      choice(
+        opt('「这是你画得最好的一幅。」', [
+          man('smile', '我知道！哈哈哈我知道！'),
+          man('……不过你说出来，我更知道了。')
+        ], { aff: { xiaoman: 2 } }),
+        opt('「门后面的那只猫，是房东吧？」', [
+          man('smile', '当然！它是这幅画的模特，我付了三根猫条。'),
+          t('房东从沙发上抬起头，好像知道在说它。')
+        ], { if: { flag: 'door_fourth_floor' }, aff: { xiaoman: 2, cat: 1 } }),
+        opt('什么也不说，抱了她一下', [
+          man('surprised', '……'),
+          man('smile', '……颜料会蹭到你衣服上的。算了，蹭吧。')
+        ], { aff: { xiaoman: 3 } })
+      ),
+      when({ flag: 'have_ticket' }, [
+        man('毕业展下个月十五号。你……要来吗？不来也没关系。'),
+        t('你从口袋里掏出 Nico 给你的票。她愣住了，然后脸一下子红了。'),
+        man('surprised', 'Nico！！！你给我出来！！！')
+      ])
+    ]
+  },
+
+  // ───────────────────────── 第十三天 ─────────────────────────
+  {
+    id: 'd13-dinner', day: 13, slot: 'night', title: '又是周六',
+    bg: 'living', time: 'night',
+    steps: [
+      t('又是周六。饭桌拉开，砂锅摆在中间。桌上还是六副碗筷。'),
+      show('laozhou', 'ache', 'xiaoman', 'nico'),
+      man('smile', '今天要庆祝！阿澈姐换工作！我的画画完了！Nico 的蛋挞……'),
+      nico('第七次！这次没有焦！'),
+      man('……Nico 的蛋挞没有焦！'),
+      t('吃到一半，老周的手机响了。是那个国外的号码。'),
+      t('桌上一下子安静了。'),
+      when({ any: [{ flag: 'letter_sent' }, { flag: 'will_answer' }] },
+        [
+          zhou('……'),
+          t('老周看了你一眼。你点了点头。'),
+          t('他站起来，走到窗边，接了。'),
+          zhou('……喂。'),
+          zhou('……嗯。是我。'),
+          zhou('sad', '……收到了？'),
+          t('他背对着大家，说话的声音很低。你们谁都没有动筷子，也没有人假装在说话。'),
+          t('过了很久，他转过身来，眼睛是红的，脸上在笑。'),
+          zhou('smile', '……她说，明年春节，带外孙回来。'),
+          man('surprised', '外孙？！周叔你有外孙？！'),
+          zhou('smile', '我也是刚知道。'),
+          t('那天晚上，那副多出来的碗筷，第一次被用了。老周往里面盛了一碗汤，说先替她喝着。')
+        ],
+        [
+          zhou('……'),
+          t('电话响了很久，老周一直看着它。'),
+          che('周叔。接吧。'),
+          t('他接了。只说了一句「喂」，就走到楼道里去了。'),
+          t('他回来的时候，什么也没说，只是给每个人都多夹了一块肉。'),
+          zhou('smile', '……吃饭，吃饭。'),
+          t('你看见他的手在抖。不过是好的那种抖。')
+        ]
+      ),
+      t('饭后，大家没有散。Nico 把他的小本子拿出来，翻到最后一页。'),
+      nico('我想好了。'),
+      nico('smile', '我要留下来，读硕士。'),
+      nico('我妈妈说，留下来也好。她说，saudade 不是坏东西，是心里有两个家的证明。'),
+      man('surprised', '……所以你还要在这里烤四年蛋挞？！'),
+      nico('smile', '至少四年。'),
+      t('小满骂了他一句，然后偷偷抹了一下眼睛。')
+    ]
+  },
+
+  // ───────────────────────── 第十四天 ─────────────────────────
+  {
+    id: 'd14-rooftop', day: 14, slot: 'dusk', title: '天台上的落日',
+    bg: 'rooftop', time: 'dusk',
+    steps: [
+      t('第十四天的傍晚，小满把大家都叫上了天台。'),
+      t('她搬了画架，说要画一幅新的住户表，这次要照着真人画。'),
+      show('ache', 'xiaoman', 'nico', 'laozhou'),
+      man('smile', '都站好！阿澈姐你笑一下！周叔你别躲！Nico 你别比耶！'),
+      nico('比耶是国际通用的！'),
+      man('{name}，你站中间。'),
+      me('为什么是我？'),
+      man('smile', '因为住户表上，你那一格一直是空的。今天要补上。'),
+      when({ memIs: ['nickname', '问号'] }, [
+        man('……那个外号，你还是不打算告诉我吗？'),
+        choice(
+          opt('告诉她', [
+            t('你小声说了。她笑得蹲在地上起不来。'),
+            man('smile', '……好！以后就叫你这个！'),
+          ], { aff: { xiaoman: 2 }, mem: { nickname: '只有小满知道的外号' } }),
+          opt('「等第二章再说。」', [man('……你学坏了。')])
+        )
+      ]),
+      t('太阳慢慢落进那座总在修的桥后面。桥上的灯一盏一盏亮起来。'),
+      t('小满画得很快。画完的时候，天已经快黑了。'),
+      t('画上，五个人和一只猫挤在天台上。每个人都在笑，除了猫。'),
+      t('你那一格，终于有了一张脸。')
+    ]
+  },
+  {
+    id: 'd14-night', day: 14, slot: 'night', title: '四楼的灯',
+    bg: 'stairs', time: 'night',
+    steps: [
+      t('大家陆续下楼了。楼道里，三楼那盏声控灯，今天亮了。'),
+      t('不知道是谁修好的。没有人承认。'),
+      // The ending scene belongs to whoever you grew closest to.
+      when(st => closest(st) === 'ache', [
+        show('ache'),
+        che('……我修的。下夜班的时候，顺手。'),
+        che('smile', '以后你晚上回来，不会再摸黑了。'),
+        che('明天见，{name}。'),
+        t('她说「明天见」的时候，好像这是一件很确定的事。')
+      ]),
+      when(st => closest(st) === 'xiaoman', [
+        show('xiaoman'),
+        man('smile', '是我修的！我爬上去换的灯泡！差点摔死！'),
+        man('……因为你每次回来，在三楼都会放慢脚步。我听得出来。'),
+        man('smile', '明天见！明天也要见！后天也要！')
+      ]),
+      when(st => closest(st) === 'laozhou', [
+        show('laozhou'),
+        zhou('smile', '人老了，睡不着，就找点事做。'),
+        zhou('这栋楼我住了三十年，那盏灯坏了五年。是你来了以后，我才想起来修。'),
+        zhou('smile', '小家伙，晚安。明天来店里，我泡新茶。')
+      ]),
+      when(st => closest(st) === 'nico', [
+        show('nico'),
+        nico('smile', '是我！我查了视频，学了中文的「灯泡」「螺口」「断电」。'),
+        nico('今天的新词是「亮了」。'),
+        nico('smile', '晚安，{name}。……这个词是你第一个教我的。')
+      ]),
+      bg('myroom', 'night'), show(),
+      t('你回到房间。门背后，那张第一天的便利贴还在，已经有点卷边了。'),
+      note('ache', '欢迎。热水器要等三分钟才热。毛巾在柜子第二层，新的。'),
+      t('旁边，不知道什么时候，多了四张新的。'),
+      note('xiaoman', '四楼住户表已更新！你那一格不许再空着！'),
+      note('laozhou', '周六的饭，记得来。'),
+      note('nico', '今天的词：家。'),
+      cat('喵。'),
+      t('房东从门缝里挤进来，在你脚边转了两圈，睡了。'),
+      t('窗外，四楼的灯，一盏一盏地暗下去。只有走廊那一盏，一直亮着。'),
+      t('第一章 · 四楼的灯 · 完'),
+      t('明天，他们还在。')
+    ]
+  }
+];
+
+return { default: __default, closest };
+});
+__def("story/chapter1.js", () => {
+const d00 = __req("story/ch1/d00-03.js").default;
+const d04 = __req("story/ch1/d04-07.js").default;
+const d08 = __req("story/ch1/d08-11.js").default;
+const d12 = __req("story/ch1/d12-14.js").default;
+const scenes = [...d00, ...d04, ...d08, ...d12];
+
+const chapter1 = {
+  id: 'ch1',
+  title: '第一章 · 四楼的灯',
+  scenes,
+  lastDay: Math.max(...scenes.map(s => s.day))
+};
+
+return { chapter1 };
+});
+__def("story/idle.js", () => {
+// Between story scenes, the apartment is still lived in. Who is home depends on the real
+// time of day; tapping someone gives a short exchange. Lines can depend on memory and flags.
+// Each line: { text, face?, if? } ; text may be a function of state.
+
+const PRESENCE = {
+  // part of day → who you can find, and where
+  dawn:  { room: 'kitchen', who: ['ache', 'cat'] },
+  day:   { room: 'bookshop', who: ['laozhou', 'cat'] },
+  dusk:  { room: 'living', who: ['xiaoman', 'nico', 'cat'] },
+  night: { room: 'rooftop', who: ['nico', 'xiaoman'] }
+};
+
+// 阿澈 is on night shift; on a rest night she can be found in the living room.
+function presentNow(part, state) {
+  const p = { ...PRESENCE[part], who: [...PRESENCE[part].who] };
+  if (part === 'night' && state.flags.ache_why_here) p.who.push('ache');
+  return p;
+}
+
+const IDLE = {
+  ache: [
+    { text: '……刚回来。今天还好。', face: 'normal' },
+    { text: '冰箱里有豆浆。别全喝了，留一口给我。', face: 'smile' },
+    { text: st => (st.mem.cilantro === 'no' ? '楼下新开的米线店，可以说「不要香菜」。我试过了。' : '楼下新开的米线店，香菜是自助的。你会喜欢。'), face: 'smile' },
+    { text: '房东今天早上咬了我的绿萝。第三次了。', face: 'sad' },
+    { text: '你今天看起来有点累。早点睡。', face: 'normal' },
+    { text: '……嗯。就是想坐一会儿。你不用说话。', face: 'normal' },
+    { text: st => (st.mem.replyToAche ? `你那天写的「${st.mem.replyToAche}」，我贴在储物柜里了。` : '便利贴是我们医院护士站的。多拿了一沓。'), face: 'smile', if: { seen: 'd2-morning' } },
+    { text: '下雨的时候，急诊会安静一点。很奇怪吧。', face: 'normal' }
+  ],
+  xiaoman: [
+    { text: '{name}！你看你看，这个颜色是不是很像傍晚的天台？', face: 'smile' },
+    { text: '完蛋了，我又把颜料挤多了。你要不要来画两笔？', face: 'surprised' },
+    { text: st => `你在住户表上叫「${st.mem.nickname || '新邻居'}」，这件事已经定了，不接受上诉。`, face: 'smile', if: { mem: 'nickname' } },
+    { text: '……不想谈毕业展。谈点别的。比如你今天吃了什么？', face: 'sad' },
+    { text: 'Nico 今天把「加油」说成了「加醋」，我笑了一整节课。', face: 'smile' },
+    { text: '诶，你觉得一扇门，画成开着的好，还是关着的好？……随便问问。', face: 'normal', if: { seen: 'd2-night' } },
+    { text: '橘子汽水是世界上最好的饮料。不接受反驳。', face: 'smile' },
+    { text: '阿澈姐今天对我笑了一下。我要记在日历上。', face: 'smile' }
+  ],
+  laozhou: [
+    { text: '小家伙，来了？坐，茶刚泡。', face: 'smile' },
+    { text: st => (st.mem.book ? `那本${st.mem.book}，看到哪儿了？不急，慢慢看。` : '书架第三层新到了一批旧书，去看看。'), face: 'normal' },
+    { text: '房东刚吃过了。别听它叫，它骗人。', face: 'smile' },
+    { text: '人到我这个年纪，最喜欢的声音就是楼上有人走来走去。', face: 'normal' },
+    { text: '周六记得上来吃饭。不来我就把你的那份给猫。', face: 'smile' },
+    { text: '书里都写着呢。可是有些事，书里也写不全。', face: 'sad' },
+    { text: '天冷了，多穿一件。你们年轻人总是不听。', face: 'normal' }
+  ],
+  nico: [
+    { text: '{name}！今天我学了一个新词：「凑合」。是很中国的词。', face: 'smile' },
+    { text: st => (st.mem.nicoWord ? `你教我的「${st.mem.nicoWord}」，我今天用了两次！` : '你今天能教我一个词吗？什么都可以。'), face: 'smile' },
+    { text: '那座桥修了三年了。我觉得我离开的时候它也修不完。', face: 'normal' },
+    { text: '我妈妈问我，这里的人好不好。我说，四楼的人很好。', face: 'smile' },
+    { text: '……今天是周日吗？我不喜欢周日下午。', face: 'sad' },
+    { text: '小满说我的蛋挞是「黑暗料理」。黑暗料理是什么意思？是夸我吗？', face: 'surprised' },
+    { text: '天台的风今天很温柔。中文可以说风温柔吗？', face: 'normal' }
+  ],
+  cat: [
+    { text: '喵。', face: 'normal' },
+    { text: '房东看了你一眼，翻了个身，露出肚子。这不是邀请。', face: 'smile' },
+    { text: '它蹭了蹭你的裤腿，然后走向了冰箱。', face: 'normal' },
+    { text: '房东正在洗脸。请勿打扰。', face: 'normal' },
+    { text: '它发出一声很长的、不满的「喵……」，好像在说今天的减肥委员会不公平。', face: 'sad', if: { seen: 'd2-night' } }
+  ]
+};
+
+// Shown on the hub when you come back after some days away.
+function welcomeBack(days, state) {
+  if (days <= 0) return null;
+  if (days === 1) return null;
+  if (days < 4) return { who: 'xiaoman', face: 'smile', text: `{name}！你这两天去哪儿了？冰箱上有阿澈姐给你的字条，我没偷看。……就看了一点点。` };
+  if (days < 10) return { who: 'laozhou', face: 'smile', text: '回来就好。你不在的这几天，房东每天晚上在你门口坐一会儿。我们都看见了。' };
+  const extra = state.mem.item === '一盆多肉' ? '你的多肉我帮你浇了。不多，一周一次。' : '前几天下雨，你房间的窗户我帮你关了。';
+  return { who: 'ache', face: 'smile', text: `……你回来啦。${extra}` };
+}
+
+return { PRESENCE, presentNow, IDLE, welcomeBack };
+});
+__def("src/llm/providers.js", () => {
+// Provider table and request/response shapes. Endpoints and example model names follow each
+// vendor's public docs as known at the time of writing; the settings panel lets the player
+// override both, so a renamed model or moved endpoint never needs a code change.
+//
+// Formats:
+//   anthropic  POST /v1/messages              { system, messages, max_tokens }
+//   openai     POST .../chat/completions       { messages:[{role:'system'},...] }   (also DeepSeek, Qwen, Kimi, GLM, custom)
+//   gemini     POST .../models/{m}:generateContent { systemInstruction, contents }
+//   ollama     POST /api/chat                  { messages, stream:false }
+
+const PROVIDERS = {
+  none:      { label: '不接入（使用内置台词）', format: null },
+  anthropic: { label: 'Anthropic Claude', format: 'anthropic', endpoint: 'https://api.anthropic.com/v1/messages', model: 'claude-sonnet-5-5', needsKey: true },
+  openai:    { label: 'OpenAI', format: 'openai', endpoint: 'https://api.openai.com/v1/chat/completions', model: '', modelHint: '填写模型名', needsKey: true },
+  gemini:    { label: 'Google Gemini', format: 'gemini', endpoint: 'https://generativelanguage.googleapis.com/v1beta/models', model: '', modelHint: '填写模型名', needsKey: true },
+  deepseek:  { label: 'DeepSeek', format: 'openai', endpoint: 'https://api.deepseek.com/chat/completions', model: 'deepseek-chat', needsKey: true },
+  qwen:      { label: '通义千问（阿里云百炼）', format: 'openai', endpoint: 'https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions', model: 'qwen-plus', needsKey: true },
+  kimi:      { label: 'Kimi（月之暗面）', format: 'openai', endpoint: 'https://api.moonshot.cn/v1/chat/completions', model: '', modelHint: '填写模型名', needsKey: true },
+  glm:       { label: '智谱 GLM', format: 'openai', endpoint: 'https://open.bigmodel.cn/api/paas/v4/chat/completions', model: '', modelHint: '填写模型名', needsKey: true },
+  ollama:    { label: 'Ollama（本机）', format: 'ollama', endpoint: 'http://localhost:11434/api/chat', model: '', modelHint: '本机已拉取的模型名', needsKey: false },
+  custom:    { label: '自定义（OpenAI 兼容）', format: 'openai', endpoint: '', model: '', modelHint: '填写模型名', needsKey: false }
+};
+
+function resolveConfig(cfg) {
+  const p = PROVIDERS[cfg.provider];
+  if (!p || !p.format) return null;
+  return {
+    format: p.format,
+    endpoint: (cfg.endpoint || p.endpoint || '').trim(),
+    model: (cfg.model || p.model || '').trim(),
+    key: (cfg.key || '').trim(),
+    needsKey: p.needsKey
+  };
+}
+
+function buildRequest(cfg, system, messages, maxTokens = 300) {
+  const c = resolveConfig(cfg);
+  if (!c) throw new Error('未选择厂商');
+  if (!c.endpoint) throw new Error('缺少接口地址');
+  if (!c.model) throw new Error('缺少模型名');
+  if (c.needsKey && !c.key) throw new Error('缺少 API key');
+  const json = body => JSON.stringify(body);
+  switch (c.format) {
+    case 'anthropic':
+      return {
+        url: c.endpoint,
+        init: {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json',
+            'x-api-key': c.key,
+            'anthropic-version': '2023-06-01',
+            'anthropic-dangerous-direct-browser-access': 'true'
+          },
+          body: json({ model: c.model, max_tokens: maxTokens, system, messages })
+        }
+      };
+    case 'openai': {
+      const headers = { 'content-type': 'application/json' };
+      if (c.key) headers.authorization = `Bearer ${c.key}`;
+      return {
+        url: c.endpoint,
+        init: { method: 'POST', headers, body: json({ model: c.model, max_tokens: maxTokens, messages: [{ role: 'system', content: system }, ...messages] }) }
+      };
+    }
+    case 'gemini':
+      return {
+        url: `${c.endpoint.replace(/\/$/, '')}/${encodeURIComponent(c.model)}:generateContent`,
+        init: {
+          method: 'POST',
+          headers: { 'content-type': 'application/json', 'x-goog-api-key': c.key },
+          body: json({
+            systemInstruction: { parts: [{ text: system }] },
+            contents: messages.map(m => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: [{ text: m.content }] })),
+            generationConfig: { maxOutputTokens: maxTokens }
+          })
+        }
+      };
+    case 'ollama':
+      return {
+        url: c.endpoint,
+        init: { method: 'POST', headers: { 'content-type': 'application/json' }, body: json({ model: c.model, stream: false, messages: [{ role: 'system', content: system }, ...messages] }) }
+      };
+    default:
+      throw new Error(`unknown format ${c.format}`);
+  }
+}
+
+function parseResponse(format, data) {
+  switch (format) {
+    case 'anthropic': return (data.content || []).filter(b => b.type === 'text').map(b => b.text).join('').trim();
+    case 'openai': return (data.choices?.[0]?.message?.content || '').trim();
+    case 'gemini': return (data.candidates?.[0]?.content?.parts || []).map(p => p.text || '').join('').trim();
+    case 'ollama': return (data.message?.content || '').trim();
+    default: return '';
+  }
+}
+
+return { PROVIDERS, resolveConfig, buildRequest, parseResponse };
+});
+__def("src/llm/index.js", () => {
+// Character chat. When no provider is configured (the default), callers fall back to the
+// built-in idle lines; this module never runs unless the player turns it on in settings.
+
+const { CHARACTERS, WORLD } = __req("story/bible.js");
+const { buildRequest, parseResponse, resolveConfig } = __req("src/llm/providers.js");
+const MEMORY_LABELS = {
+  item: '搬来时带的东西',
+  cilantro: '吃不吃香菜（yes=吃，no=不吃）',
+  nickname: '小满给起的外号',
+  reason: '来这座城市的原因',
+  nicoWord: '教给 Nico 的中文词',
+  book: '从老周那借的书',
+  replyToAche: '回给阿澈便利贴的话'
+};
+
+function isEnabled(settings) {
+  return !!(settings?.llm?.enabled && resolveConfig(settings.llm));
+}
+
+function systemPrompt(id, state, sceneTitles = []) {
+  const c = CHARACTERS[id];
+  const facts = Object.entries(state.mem)
+    .filter(([k]) => MEMORY_LABELS[k])
+    .map(([k, v]) => `- ${MEMORY_LABELS[k]}：${v}`)
+    .join('\n');
+  const closeness = state.aff[id] ?? 0;
+  return [
+    `你是「${c.name}」，住在一栋老公寓的四楼合租房里。正在和室友「${state.name || '你'}」聊天。`,
+    `世界：${WORLD.premise}`,
+    `你的身份：${c.role}${c.age ? `，${c.age} 岁` : ''}。`,
+    `性格：${c.personality}`,
+    `说话方式：${c.speech}`,
+    `习惯：${c.habits.join('；')}。喜欢：${c.likes.join('、')}。不喜欢：${c.dislikes.join('、')}。`,
+    `和其他人：${Object.values(c.relations).join('；') || '无'}。`,
+    `你心里的事（不要主动全盘说出，只能慢慢透露）：${c.arc.join(' ')}`,
+    `你们的亲近程度：${closeness}（-5 到 20，越高越亲近）。`,
+    facts ? `你记得关于对方的事：\n${facts}` : '',
+    sceneTitles.length ? `你们一起经历过：${sceneTitles.join('、')}。` : '',
+    '规则：只用中文；每次回复一到三句，像日常说话；不要旁白，不要列表；不提自己是 AI 或程序；不替对方说话；对方难过时先陪着，不说教。'
+  ].filter(Boolean).join('\n');
+}
+
+async function chat({ id, state, history, sceneTitles, fetchImpl = globalThis.fetch, signal }) {
+  const cfg = state.settings.llm;
+  const { url, init } = buildRequest(cfg, systemPrompt(id, state, sceneTitles), history);
+  const res = await fetchImpl(url, { ...init, signal });
+  if (!res.ok) {
+    let detail = '';
+    try { detail = (await res.text()).slice(0, 200); } catch { /* ignore */ }
+    throw new Error(`HTTP ${res.status} ${detail}`);
+  }
+  const data = await res.json();
+  const text = parseResponse(resolveConfig(cfg).format, data);
+  if (!text) throw new Error('空回复');
+  return text;
+}
+
+return { isEnabled, systemPrompt, chat };
+});
+__def("src/audio.js", () => {
+// Ambient sound synthesized on the fly: rain (filtered noise) and a soft room tone.
+// Nothing plays until the player turns sound on.
+
+let ctx = null, rainGain = null, roomGain = null, master = null;
+
+function noiseBuffer(c, seconds = 2) {
+  const buf = c.createBuffer(1, c.sampleRate * seconds, c.sampleRate);
+  const d = buf.getChannelData(0);
+  let last = 0;
+  for (let i = 0; i < d.length; i++) {
+    const white = Math.random() * 2 - 1;
+    last = (last + 0.02 * white) / 1.02;      // brown-ish
+    d[i] = last * 3.5;
+  }
+  return buf;
+}
+
+function ensure() {
+  if (ctx) return ctx;
+  const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
+  if (!AC) return null;
+  ctx = new AC();
+  master = ctx.createGain(); master.gain.value = 0.0; master.connect(ctx.destination);
+
+  const rain = ctx.createBufferSource(); rain.buffer = noiseBuffer(ctx, 3); rain.loop = true;
+  const hp = ctx.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 900;
+  const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 6000;
+  rainGain = ctx.createGain(); rainGain.gain.value = 0;
+  rain.connect(hp).connect(lp).connect(rainGain).connect(master); rain.start();
+
+  const room = ctx.createBufferSource(); room.buffer = noiseBuffer(ctx, 4); room.loop = true;
+  const lp2 = ctx.createBiquadFilter(); lp2.type = 'lowpass'; lp2.frequency.value = 260;
+  roomGain = ctx.createGain(); roomGain.gain.value = 0.25;
+  room.connect(lp2).connect(roomGain).connect(master); room.start();
+  return ctx;
+}
+
+function setSound(on) {
+  const c = ensure();
+  if (!c) return;
+  if (c.state === 'suspended') c.resume();
+  master.gain.setTargetAtTime(on ? 0.55 : 0, c.currentTime, 0.6);
+}
+
+function setRain(on) {
+  if (!ctx) return;
+  rainGain.gain.setTargetAtTime(on ? 0.5 : 0, ctx.currentTime, 1.2);
+}
+
+// A tiny two-note chime for page turns and notes.
+function chime() {
+  if (!ctx || master.gain.value < 0.01) return;
+  const t = ctx.currentTime;
+  for (const [f, dt] of [[880, 0], [1320, 0.09]]) {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'sine'; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t + dt); g.gain.linearRampToValueAtTime(0.08, t + dt + 0.02); g.gain.exponentialRampToValueAtTime(0.0001, t + dt + 0.8);
+    o.connect(g).connect(master); o.start(t + dt); o.stop(t + dt + 0.9);
+  }
+}
+
+return { setSound, setRain, chime };
+});
+__def("src/main.js", () => {
+const { runScene, renderText, evalCond } = __req("src/engine.js");
+const { nextUp, markDayIfComplete, absence, dateKey, partOfDay } = __req("src/calendar.js");
+const { load, save, newState, exportSave, importSave, reset } = __req("src/state.js");
+const { renderScene } = __req("src/art/scenes.js");
+const { renderPortrait } = __req("src/art/portraits.js");
+const { CHARACTERS, WORLD } = __req("story/bible.js");
+const { chapter1 } = __req("story/chapter1.js");
+const { IDLE, presentNow, welcomeBack } = __req("story/idle.js");
+const { PROVIDERS } = __req("src/llm/providers.js");
+const llm = __req("src/llm/index.js");
+const { setSound, setRain, chime } = __req("src/audio.js");
+const $ = s => document.querySelector(s);
+const params = new URLSearchParams(location.search);
+const storage = (() => { try { return window.localStorage; } catch { return null; } })();
+const today = () => params.get('today') || dateKey();
+const realPart = () => params.get('part') || partOfDay();
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+const TIME_LABEL = { dawn: '清晨', day: '白天', dusk: '傍晚', night: '深夜' };
+const ROOM_LABEL = { living: '客厅', kitchen: '厨房', rooftop: '天台', myroom: '你的房间', bookshop: '楼下书店', stairs: '楼道' };
+const dayLabel = d => (d === 0 ? '序章' : `第 ${d} 天`);
+
+let state = load(storage);
+const persist = () => save(storage, state);
+const log = [];
+let mode = 'title';          // title | story | hub | chat
+let current = { room: 'living', time: 'dusk', weather: 'clear' };
+
+// ───────────────────────── background & rain ─────────────────────────
+const layers = [...document.querySelectorAll('#bg .bg-layer')];
+let front = 0, bgKey = '';
+function setBg(room, time, weather = 'clear') {
+  current = { room, time, weather };
+  const key = `${room}|${time}|${weather}`;
+  if (key === bgKey) return;
+  bgKey = key;
+  const next = layers[1 - front];
+  next.innerHTML = renderScene(room, time, weather);
+  next.classList.add('on');
+  layers[front].classList.remove('on');
+  front = 1 - front;
+  $('#rain').classList.toggle('on', weather === 'rain');
+  setRain(weather === 'rain');
+}
+(function makeRain() {
+  const box = $('#rain');
+  for (let i = 0; i < 70; i++) {
+    const d = document.createElement('i');
+    d.style.left = `${Math.random() * 110}%`;
+    d.style.animationDuration = `${0.55 + Math.random() * 0.5}s`;
+    d.style.animationDelay = `${-Math.random() * 2}s`;
+    d.style.opacity = `${0.3 + Math.random() * 0.6}`;
+    box.appendChild(d);
+  }
+})();
+
+// ───────────────────────── cast ─────────────────────────
+const SLOTS = { 1: [50], 2: [32, 68], 3: [22, 50, 78], 4: [16, 38, 62, 84], 5: [12, 31, 50, 69, 88] };
+let onStage = [];
+function actorEl(id) { return document.querySelector(`.actor[data-id="${id}"]:not([data-leaving])`); }
+
+function setCast(ids, { clickable = false } = {}) {
+  const box = $('#cast');
+  box.classList.toggle('hub', clickable);
+  for (const el of [...box.children]) {
+    if (!ids.includes(el.dataset.id) && !el.dataset.leaving) {
+      el.dataset.leaving = '1';
+      el.classList.remove('in');
+      setTimeout(() => el.remove(), 500);
+    }
+  }
+  onStage = ids.slice();
+  const pos = SLOTS[ids.length] || SLOTS[5];
+  ids.forEach((id, i) => {
+    let el = document.querySelector(`.actor[data-id="${id}"]:not([data-leaving])`);
+    if (!el) {
+      for (const stale of document.querySelectorAll(`.actor[data-id="${id}"]`)) stale.remove();
+      el = document.createElement('div');
+      el.className = 'actor';
+      el.dataset.id = id;
+      el.dataset.face = 'normal';
+      el.innerHTML = `<div class="breathe">${renderPortrait(id, 'normal')}</div><span class="tag">${CHARACTERS[id].name}</span>`;
+      el.style.left = `${pos[i]}%`;
+      box.appendChild(el);
+      requestAnimationFrame(() => { if (!el.dataset.leaving) el.classList.add('in'); });
+    }
+    el.style.left = `${pos[i]}%`;
+    el.classList.toggle('is-cat', id === 'cat');
+    el.classList.toggle('clickable', clickable);
+    el.classList.remove('speaking');
+  });
+}
+
+function setFace(id, face) {
+  for (const el of $('#cast').children) el.classList.toggle('speaking', el.dataset.id === id);
+  const el = actorEl(id);
+  if (el && el.dataset.face !== face) {
+    el.dataset.face = face;
+    el.querySelector('.breathe').innerHTML = renderPortrait(id, face);
+  }
+}
+
+// ───────────────────────── waiting for the player ─────────────────────────
+let waiter = null;          // { kind, resolve }
+let typing = null;          // { finish }
+
+function advance() {
+  if (typing) { typing.finish(); return; }
+  if (waiter && ['line', 'note', 'card'].includes(waiter.kind)) {
+    const w = waiter; waiter = null; w.resolve();
+  }
+}
+$('#dialog').addEventListener('click', advance);
+$('#note').addEventListener('click', advance);
+$('#card').addEventListener('click', advance);
+document.addEventListener('keydown', e => {
+  if (e.target instanceof Element && e.target.closest('input, select, textarea, dialog')) return;
+  if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); advance(); }
+  if (waiter?.kind === 'choice' && /^[1-9]$/.test(e.key)) $('#choices').children[Number(e.key) - 1]?.click();
+});
+
+function speakerName(who) {
+  if (who === 'me') return state.name || '你';
+  return CHARACTERS[who]?.name || '';
+}
+
+function typeText(el, text) {
+  const speed = params.has('fast') ? 0 : state.settings.textSpeed;
+  return new Promise(resolve => {
+    if (!speed) { el.textContent = text; resolve(); return; }
+    let i = 0;
+    el.textContent = '';
+    const timer = setInterval(() => {
+      i++;
+      el.textContent = text.slice(0, i);
+      if (i >= text.length) done();
+    }, speed);
+    function done() { clearInterval(timer); el.textContent = text; typing = null; resolve(); }
+    typing = { finish: done };
+  });
+}
+
+async function showLine({ who, face = 'normal', text }) {
+  const box = $('#dialog'), plate = $('#nameplate');
+  box.hidden = false;
+  box.classList.remove('ready');
+  const narration = !who;
+  box.classList.toggle('narration', narration);
+  if (narration) {
+    plate.textContent = '';
+    for (const el of $('#cast').children) el.classList.remove('speaking');
+  } else {
+    plate.textContent = speakerName(who);
+    plate.style.background = who === 'me' ? '#8a7a6a' : (CHARACTERS[who]?.color || '#8a7a6a');
+    if (who !== 'me') {
+      if (!onStage.includes(who)) setCast([...onStage, who].slice(-4));
+      setFace(who, face);
+    } else {
+      for (const el of $('#cast').children) el.classList.remove('speaking');
+    }
+  }
+  log.push({ who: narration ? '' : speakerName(who), text });
+  if (log.length > 300) log.shift();
+  await typeText($('#line'), text);
+  box.classList.add('ready');
+  await new Promise(resolve => { waiter = { kind: 'line', resolve }; });
+}
+
+function showChoices(options) {
+  const box = $('#choices');
+  box.innerHTML = '';
+  box.hidden = false;
+  return new Promise(resolve => {
+    waiter = { kind: 'choice', resolve };
+    options.forEach((text, i) => {
+      const b = document.createElement('button');
+      b.innerHTML = `<small>${i + 1}</small>`;
+      b.append(text);
+      b.style.animationDelay = `${i * 80}ms`;
+      b.addEventListener('click', () => {
+        box.hidden = true;
+        waiter = null;
+        log.push({ who: '→', text });
+        resolve(i);
+      });
+      box.appendChild(b);
+    });
+    box.firstChild?.focus({ preventScroll: true });
+  });
+}
+
+function askInput(prompt, placeholder) {
+  const form = $('#ask'), input = $('#ask-input');
+  $('#ask-label').textContent = prompt;
+  input.placeholder = placeholder || '';
+  input.value = '';
+  form.hidden = false;
+  $('#dialog').hidden = true;
+  setTimeout(() => input.focus(), 50);
+  return new Promise(resolve => {
+    waiter = { kind: 'input', resolve };
+    form.onsubmit = e => {
+      e.preventDefault();
+      form.hidden = true;
+      waiter = null;
+      resolve(input.value);
+    };
+  });
+}
+
+async function showNote(from, text) {
+  $('#note-text').textContent = text;
+  $('#note-from').textContent = from === 'me' ? '' : (CHARACTERS[from]?.name || '');
+  $('#note').hidden = false;
+  log.push({ who: `${CHARACTERS[from]?.name || ''}的字条`, text });
+  chime();
+  await new Promise(resolve => { waiter = { kind: 'note', resolve }; });
+  $('#note').hidden = true;
+}
+
+async function showCard(sub, title, ms = 2600) {
+  $('#card-sub').textContent = sub;
+  $('#card-title').textContent = title;
+  $('#card').hidden = false;
+  $('#dialog').hidden = true;
+  await Promise.race([
+    new Promise(resolve => { waiter = { kind: 'card', resolve }; }),
+    sleep(params.has('fast') ? 50 : ms)
+  ]);
+  waiter = null;
+  $('#card').hidden = true;
+}
+
+let toastTimer;
+function toast(text, ms = 2600) {
+  const t = $('#toast');
+  t.textContent = text;
+  t.classList.add('on');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+function setClock(day, time, weather) {
+  $('#clock').textContent = `${dayLabel(day)} · ${TIME_LABEL[time] || ''}${weather === 'rain' ? ' · 雨' : ''}`;
+}
+
+// ───────────────────────── story ─────────────────────────
+async function playScene(scene) {
+  mode = 'story';
+  $('#hub').hidden = true;
+  $('#chatbox').hidden = true;
+  $('#topbar').hidden = false;
+  const gen = runScene(scene, state);
+  let r = gen.next();
+  while (!r.done) {
+    const ev = r.value;
+    let reply;
+    switch (ev.type) {
+      case 'scene':
+        setBg(ev.bg, ev.time, ev.weather);
+        setCast([]);
+        setClock(scene.day, ev.time, ev.weather);
+        await showCard(dayLabel(scene.day), ev.title);
+        break;
+      case 'bg':
+        setBg(ev.bg, ev.time || current.time, ev.weather || current.weather);
+        setClock(scene.day, ev.time || current.time, ev.weather || current.weather);
+        await sleep(300);
+        break;
+      case 'show': setCast(ev.show); await sleep(200); break;
+      case 'pause': await sleep(ev.ms); break;
+      case 'text': await showLine({ text: ev.text }); break;
+      case 'say': await showLine(ev); break;
+      case 'note': $('#dialog').hidden = true; await showNote(ev.from, ev.text); break;
+      case 'choice': reply = await showChoices(ev.options); break;
+      case 'input': reply = await askInput(ev.prompt, ev.placeholder); break;
+      default: break;
+    }
+    r = gen.next(reply);
+  }
+  state.lastVisit = today();
+  if (!state.startedOn) state.startedOn = today();
+  const finishedDay = markDayIfComplete(chapter1, state, scene.day, today());
+  persist();
+  $('#dialog').hidden = true;
+  return finishedDay;
+}
+
+let storyRunning = false;
+async function continueStory() {
+  if (storyRunning) return;
+  storyRunning = true;
+  try { await storyLoop(); } finally { storyRunning = false; }
+  enterHub();
+}
+
+async function storyLoop() {
+  for (;;) {
+    const up = nextUp(chapter1, state, today());
+    if (up.status !== 'play') break;
+    const finishedDay = await playScene(up.scene);
+    if (finishedDay) {
+      setCast([]);
+      await showCard(dayLabel(up.day), up.day === chapter1.lastDay ? '第一章 · 完' : '今天就到这里', 3200);
+      break;
+    }
+  }
+}
+
+// ───────────────────────── hub: the apartment right now ─────────────────────────
+let welcomed = false;
+function hubWeather() {
+  const k = [...today()].reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
+  return k % 5 === 0 ? 'rain' : 'clear';
+}
+
+function enterHub() {
+  mode = 'hub';
+  for (const id of ['#dialog', '#choices', '#note', '#ask', '#chatbox']) $(id).hidden = true;
+  $('#topbar').hidden = false;
+  const part = realPart();
+  const p = presentNow(part, state);
+  const weather = hubWeather();
+  setBg(p.room, part, weather);
+  setCast(p.who, { clickable: true });
+  const up = nextUp(chapter1, state, today());
+  const day = up.day ?? chapter1.lastDay;
+  $('#clock').textContent = `${today().slice(5).replace('-', '月')}日 · ${TIME_LABEL[part]}${weather === 'rain' ? ' · 雨' : ''}`;
+  $('#hub-title').textContent = `四楼此刻 · ${ROOM_LABEL[p.room]}`;
+  $('#hub-desc').textContent = WORLD.place[p.room].replace(/^[^：]+：/, '');
+  const btn = $('#hub-story');
+  if (up.status === 'play') {
+    btn.hidden = false;
+    btn.textContent = up.scene.id === 'd0-arrive' ? '开始：搬进来的那天' : `继续：${dayLabel(up.day)}`;
+    $('#hub-hint').textContent = '点一下他们，可以聊几句。';
+  } else if (up.status === 'wait') {
+    btn.hidden = true;
+    const h = 24 - new Date().getHours();
+    $('#hub-hint').textContent = `${dayLabel(day)}的故事明天开始（大约 ${h} 小时后）。今晚他们都在，点一下就能聊。`;
+  } else {
+    btn.hidden = true;
+    $('#hub-hint').textContent = '第一章到这里结束了。第二章还在写。你可以随时回来坐坐。';
+  }
+  $('#hub').hidden = false;
+  const gap = absence(state, today());
+  state.lastVisit = today();
+  persist();
+  if (!welcomed) {
+    welcomed = true;
+    const wb = welcomeBack(gap, state);
+    if (wb) hubSay(wb.who, wb.face, renderText(wb.text, state));
+  }
+}
+
+async function hubSay(who, face, text) {
+  if (!onStage.includes(who)) setCast([...onStage, who].slice(-5), { clickable: true });
+  await showLine({ who, face, text });
+  $('#dialog').hidden = true;
+  for (const el of $('#cast').children) el.classList.remove('speaking');
+}
+
+function idleLine(id) {
+  const pool = (IDLE[id] || []).filter(l => evalCond(l.if, state));
+  if (!pool.length) return { face: 'normal', text: '……' };
+  const n = state.chats[id] || 0;
+  state.chats[id] = n + 1;
+  persist();
+  const l = pool[n % pool.length];
+  return { face: l.face || 'normal', text: renderText(l.text, state) };
+}
+
+let chatting = null;   // { id, history, busy }
+$('#cast').addEventListener('click', async e => {
+  const el = e.target.closest('.actor.clickable');
+  if (!el || mode !== 'hub' || waiter) return;
+  const id = el.dataset.id;
+  const line = idleLine(id);
+  if (id !== 'cat' && llm.isEnabled(state.settings)) {
+    startChat(id, line);
+  } else {
+    await hubSay(id, line.face, line.text);
+  }
+});
+
+async function startChat(id, opening) {
+  mode = 'chat';
+  $('#hub').hidden = true;
+  chatting = { id, history: [{ role: 'assistant', content: opening.text }], busy: false };
+  setFace(id, opening.face);
+  showChatLine(id, opening.face, opening.text);
+  $('#chatbox').hidden = false;
+  $('#chat-input').value = '';
+  $('#chat-input').focus();
+}
+
+function showChatLine(who, face, text) {
+  const box = $('#dialog');
+  box.hidden = false;
+  box.classList.remove('narration');
+  box.classList.add('ready');
+  $('#nameplate').textContent = speakerName(who);
+  $('#nameplate').style.background = CHARACTERS[who]?.color || '#8a7a6a';
+  $('#line').textContent = text;
+  if (who !== 'me') setFace(who, face);
+  log.push({ who: speakerName(who), text });
+}
+
+$('#chatbox').addEventListener('submit', async e => {
+  e.preventDefault();
+  if (!chatting || chatting.busy) return;
+  const text = $('#chat-input').value.trim();
+  if (!text) return;
+  $('#chat-input').value = '';
+  chatting.history.push({ role: 'user', content: text });
+  log.push({ who: speakerName('me'), text });
+  chatting.busy = true;
+  showChatLine(chatting.id, 'normal', '……');
+  try {
+    const titles = chapter1.scenes.filter(s => state.done[s.id]).map(s => s.title).slice(-8);
+    const reply = await llm.chat({ id: chatting.id, state, history: chatting.history.slice(-12), sceneTitles: titles });
+    chatting.history.push({ role: 'assistant', content: reply });
+    showChatLine(chatting.id, /[哈笑！]/.test(reply) ? 'smile' : 'normal', reply);
+  } catch (err) {
+    toast(`没连上：${String(err.message || err).slice(0, 80)}`);
+    const l = idleLine(chatting.id);
+    showChatLine(chatting.id, l.face, l.text);
+  } finally {
+    if (chatting) chatting.busy = false;
+  }
+});
+$('#chat-end').addEventListener('click', () => { chatting = null; enterHub(); });
+
+$('#hub-story').addEventListener('click', () => { if (!waiter) continueStory(); });
+
+// ───────────────────────── top bar, log, settings ─────────────────────────
+$('#topbar').addEventListener('click', e => {
+  const act = e.target.closest('button')?.dataset.act;
+  if (act === 'hub' && mode === 'story') toast('先把这一段看完吧。');
+  else if (act === 'hub') { chatting = null; enterHub(); }
+  if (act === 'log') openLog();
+  if (act === 'settings') openSettings();
+});
+for (const d of document.querySelectorAll('dialog')) {
+  d.addEventListener('click', e => { if (e.target === d || e.target.matches('[data-close]')) d.close(); });
+}
+
+function openLog() {
+  const ol = $('#log-list');
+  ol.innerHTML = '';
+  for (const { who, text } of log.slice(-120)) {
+    const li = document.createElement('li');
+    if (who) { const b = document.createElement('b'); b.textContent = who; li.append(b); }
+    li.append(text);
+    ol.append(li);
+  }
+  $('#log-modal').showModal();
+  ol.lastElementChild?.scrollIntoView({ block: 'end' });
+}
+
+function openSettings() {
+  const s = state.settings;
+  for (const r of document.querySelectorAll('input[name=pace]')) r.checked = r.value === s.pace;
+  $('#set-speed').value = 80 - s.textSpeed;
+  $('#set-sound').checked = s.sound;
+  const sel = $('#set-provider');
+  if (!sel.options.length) for (const [id, p] of Object.entries(PROVIDERS)) sel.add(new Option(p.label, id));
+  sel.value = s.llm.provider;
+  fillProviderFields();
+  $('#set-llm-on').checked = s.llm.enabled;
+  $('#set-test-out').textContent = '';
+  $('#settings-modal').showModal();
+}
+
+function fillProviderFields() {
+  const s = state.settings.llm, p = PROVIDERS[$('#set-provider').value];
+  $('#set-model').value = s.provider === $('#set-provider').value ? s.model : '';
+  $('#set-model').placeholder = p.model || p.modelHint || '';
+  $('#set-key').value = s.key;
+  $('#set-endpoint').value = s.provider === $('#set-provider').value ? s.endpoint : '';
+  $('#set-endpoint').placeholder = p.endpoint || '必填';
+}
+
+function readSettings() {
+  const s = state.settings;
+  s.pace = document.querySelector('input[name=pace]:checked')?.value || 'real';
+  s.textSpeed = 80 - Number($('#set-speed').value);
+  s.sound = $('#set-sound').checked;
+  s.llm = {
+    provider: $('#set-provider').value,
+    model: $('#set-model').value.trim(),
+    key: $('#set-key').value.trim(),
+    endpoint: $('#set-endpoint').value.trim(),
+    enabled: $('#set-llm-on').checked
+  };
+  setSound(s.sound);
+  persist();
+}
+$('#settings-modal').addEventListener('change', e => {
+  if (e.target.id === 'set-provider') fillProviderFields();
+  readSettings();
+});
+$('#settings-modal').addEventListener('close', () => { if (mode === 'hub') enterHub(); });
+
+$('#set-test').addEventListener('click', async () => {
+  readSettings();
+  const out = $('#set-test-out');
+  out.textContent = '正在问阿澈……';
+  try {
+    const reply = await llm.chat({ id: 'ache', state: { ...state, settings: { ...state.settings, llm: { ...state.settings.llm, enabled: true } } }, history: [{ role: 'user', content: '你好，在吗？' }] });
+    out.textContent = `阿澈：${reply}`;
+  } catch (err) {
+    out.textContent = `没连上：${String(err.message || err).slice(0, 160)}`;
+  }
+});
+
+function download(name, text) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], { type: 'application/json' }));
+  a.download = name;
+  document.body.append(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+$('#set-export').addEventListener('click', () => download(`四楼存档-${today()}.json`, exportSave(state)));
+$('#set-import').addEventListener('click', () => $('#file-import').click());
+$('#btn-import').addEventListener('click', () => $('#file-import').click());
+$('#file-import').addEventListener('change', async e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  try {
+    state = importSave(await f.text(), state.settings);
+    persist();
+    toast('存档已导入。');
+    $('#settings-modal').close();
+    $('#title').hidden = true;
+    enterHub();
+  } catch (err) {
+    toast(`导入失败：${err.message}`);
+  }
+});
+let resetArmed = 0;
+$('#set-reset').addEventListener('click', e => {
+  if (Date.now() - resetArmed > 3000) {
+    resetArmed = Date.now();
+    e.target.textContent = '再点一次，确认重新开始';
+    setTimeout(() => { e.target.textContent = '重新开始'; }, 3000);
+    return;
+  }
+  const settings = state.settings;
+  reset(storage);
+  state = newState();
+  state.settings = settings;
+  persist();
+  location.reload();
+});
+
+// ───────────────────────── title ─────────────────────────
+function boot() {
+  const part = realPart();
+  setBg('living', part, hubWeather());
+  const started = Object.keys(state.done).length > 0;
+  $('#btn-start').textContent = started ? '回到四楼' : '搬进去';
+  $('#btn-start').addEventListener('click', () => {
+    $('#title').hidden = true;
+    if (state.settings.sound) setSound(true);
+    if (!started) continueStory();
+    else enterHub();
+  });
+  window.__FF__ = { get state() { return state; }, get mode() { return mode; }, chapter: chapter1 };
+}
+boot();
+
+return {  };
+});
+__req("src/main.js");
+})();
+</script>
+</body>
+</html>

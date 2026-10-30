@@ -1,0 +1,11 @@
+{
+  "name": "fourth-floor",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/*.test.mjs",
+    "e2e": "node tests/e2e.mjs && node tests/dist.e2e.mjs",
+    "build": "node tools/build.mjs",
+    "backup": "./backup.sh"
+  }
+}

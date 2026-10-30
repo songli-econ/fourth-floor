@@ -1,0 +1,122 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>四楼</title>
+<meta name="description" content="一栋老公寓的四楼，几个室友，每天一点点的生活。">
+<meta name="theme-color" content="#2a2233">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect x='10' y='14' width='44' height='44' rx='4' fill='%23e8b26a'/%3E%3Crect x='18' y='22' width='12' height='12' fill='%23fff3cf'/%3E%3Crect x='34' y='22' width='12' height='12' fill='%23fff3cf'/%3E%3Crect x='26' y='40' width='12' height='18' fill='%237b4b33'/%3E%3Cpath d='M6 16 L32 4 L58 16' stroke='%237b4b33' stroke-width='5' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="src/style.css">
+</head>
+<body>
+<div id="app">
+  <div id="bg"><div class="bg-layer"></div><div class="bg-layer"></div></div>
+  <div id="rain" aria-hidden="true"></div>
+  <div id="cast" aria-hidden="true"></div>
+
+  <header id="topbar" hidden>
+    <div id="clock"></div>
+    <nav>
+      <button data-act="hub" title="四楼此刻">四楼</button>
+      <button data-act="log" title="回看">回看</button>
+      <button data-act="settings" title="设置">设置</button>
+    </nav>
+  </header>
+
+  <section id="dialog" hidden>
+    <div id="nameplate"></div>
+    <p id="line"></p>
+    <span id="more" aria-hidden="true">▼</span>
+  </section>
+
+  <section id="choices" hidden></section>
+
+  <form id="ask" hidden>
+    <label id="ask-label" for="ask-input"></label>
+    <div class="row"><input id="ask-input" maxlength="12" autocomplete="off"><button type="submit">好</button></div>
+  </form>
+
+  <section id="note" hidden><div class="paper"><p id="note-text"></p><span id="note-from"></span></div></section>
+
+  <section id="card" hidden><div><small id="card-sub"></small><h2 id="card-title"></h2></div></section>
+
+  <section id="hub" hidden>
+    <div class="panel">
+      <h2 id="hub-title"></h2>
+      <p id="hub-desc"></p>
+      <p id="hub-hint"></p>
+      <div class="actions">
+        <button id="hub-story" class="primary"></button>
+      </div>
+    </div>
+  </section>
+
+  <form id="chatbox" hidden>
+    <input id="chat-input" placeholder="说点什么……" autocomplete="off" maxlength="200">
+    <button type="submit">说</button>
+    <button type="button" id="chat-end">走开</button>
+  </form>
+
+  <section id="title">
+    <div class="title-inner">
+      <h1>四楼</h1>
+      <p class="sub">一栋没有电梯的老公寓。你搬进来的第一天，下着雨。</p>
+      <div class="actions">
+        <button id="btn-start" class="primary">搬进去</button>
+        <button id="btn-import" class="ghost">导入存档</button>
+      </div>
+      <p class="foot">每天来一会儿就好。他们会等你。</p>
+    </div>
+  </section>
+
+  <div id="toast" role="status" aria-live="polite"></div>
+</div>
+
+<dialog id="log-modal">
+  <header><h3>回看</h3><button data-close>关闭</button></header>
+  <ol id="log-list"></ol>
+</dialog>
+
+<dialog id="settings-modal">
+  <header><h3>设置</h3><button data-close>关闭</button></header>
+  <div class="settings">
+    <fieldset>
+      <legend>节奏</legend>
+      <label><input type="radio" name="pace" value="real"> 真实时间（每天解锁一天）</label>
+      <label><input type="radio" name="pace" value="free"> 不用等（一口气看下去）</label>
+    </fieldset>
+    <fieldset>
+      <legend>文字与声音</legend>
+      <label>文字速度 <input type="range" id="set-speed" min="0" max="80" step="4"></label>
+      <label><input type="checkbox" id="set-sound"> 环境音（雨声、房间声）</label>
+    </fieldset>
+    <fieldset>
+      <legend>让角色自由聊天（可选）</legend>
+      <p class="hint">接入一家大模型以后，在「四楼」里点角色可以和他们自由对话；剧情主线不变。API key 只保存在这台设备的浏览器里，导出存档时不会带上。有些厂商不允许网页直接调用，届时需要一个小代理。</p>
+      <label>厂商 <select id="set-provider"></select></label>
+      <label>模型 <input id="set-model" autocomplete="off"></label>
+      <label>API key <input id="set-key" type="password" autocomplete="off"></label>
+      <label>接口地址 <input id="set-endpoint" autocomplete="off" placeholder="留空用默认"></label>
+      <label><input type="checkbox" id="set-llm-on"> 启用</label>
+      <button type="button" id="set-test">测试一下</button>
+      <p id="set-test-out" class="hint"></p>
+    </fieldset>
+    <fieldset>
+      <legend>存档</legend>
+      <div class="row">
+        <button type="button" id="set-export">导出存档</button>
+        <button type="button" id="set-import">导入存档</button>
+        <button type="button" id="set-reset" class="danger">重新开始</button>
+      </div>
+    </fieldset>
+  </div>
+</dialog>
+
+<input type="file" id="file-import" accept="application/json,.json" hidden>
+<script type="module" src="src/main.js"></script>
+</body>
+</html>
