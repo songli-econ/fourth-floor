@@ -21,7 +21,8 @@ const server = createServer(async (req, res) => {
   } catch { res.writeHead(404).end(); }
 });
 await new Promise(r => server.listen(0, '127.0.0.1', r));
-const base = `http://127.0.0.1:${server.address().port}/`;
+// FF_BASE=https://... runs the same checks against a deployed copy.
+const base = process.env.FF_BASE || `http://127.0.0.1:${server.address().port}/`;
 
 const b = await launch({ extraArgs: ['--window-size=1280,800'] });
 let ok = true;
